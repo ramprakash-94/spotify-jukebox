@@ -1,15 +1,21 @@
 import React from 'react';
-import ReactDOM from 'react-dom'
 import logo from './logo.svg';
 import './App.css';
+import { ApolloClient } from 'apollo-client'
+import { HttpLink } from 'apollo-link-http'
+import { InMemoryCache } from 'apollo-cache-inmemory'
+import gql from 'graphql-tag'
+
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      graphqlURI: "localhost:4000",
       token: "",
       deviceId: "",
       loggedIn: false,
+      guest: false,
       error: "",
       trackName: "Track Name",
       artistName: "Artist Name",
@@ -17,15 +23,20 @@ class App extends React.Component {
       playing: false,
       position: 0,
       duration: 0,
-      searchResults: null
+      searchResults: null,
+      roomNumber: null,
+      userId: null,
+      playlistId: null,
+      queue: []
     };
     this.playerCheckInterval = null;
     this.searchURI = this.searchURI.bind(this);
   }
 
-  handleLogin() {
-    console.log("No Token provided");
+  async handleLogin() {
     if (this.state.token !== "") {
+      const userId = await this.handleCreateUser(this.state.token)
+      await this.handleCreateRoom(userId)
       this.setState({ loggedIn: true });
       this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000);
   
@@ -131,7 +142,7 @@ class App extends React.Component {
       },
       body: JSON.stringify({
         "device_ids": [ deviceId ],
-        "play": true,
+        "play": false,
       }),
     });
   }
@@ -139,7 +150,7 @@ class App extends React.Component {
   searchURI = async searchQuery =>{
     const {token } = this.state;
     const items = [];
-    await fetch(`https://api.spotify.com/v1/search?q=${searchQuery}&type=track&limit=3`, {
+    await fetch(`https://api.spotify.com/v1/search?q=${searchQuery}&type=track&limit=5`, {
       method: "GET",
       headers: {
         authorization: `Bearer ${token}`,
@@ -161,15 +172,146 @@ class App extends React.Component {
     });
   }
 
+  handleJoinRoom = async query => {
+    const {roomNumber} = this.state;
+    let queue = []
+    const client = new ApolloClient({
+      link: new HttpLink({ uri: "http://localhost:4000" }),
+      cache: new InMemoryCache()
+    })
+    await client.query({
+      query: gql`
+        {
+          room(num: ${roomNumber}){
+            id
+            number
+            admin{
+              id
+            }
+            playlists{
+              id
+              tracks
+            }
+          }
+        }
+      `,
+    })
+    .then(function(data){
+      queue = data.data.room.playlists[0].tracks
+    }) 
+    .catch(error => console.error(error));
+    this.setState({ 
+      loggedIn: true ,
+      queue: queue
+    })
+  }
+
+  handleCreateUser = async spotifyToken => {
+    console.log(spotifyToken)
+    let userId = null
+    const client = new ApolloClient({
+      link: new HttpLink({ uri: "http://localhost:4000" }),
+      cache: new InMemoryCache()
+    })
+    await client.mutate({
+      variables: { token: spotifyToken, type: "owner"},
+      mutation: gql`
+          mutation AddUser($token: String!, $type: String!){
+            addUser(token: $token, type: $type){
+              id
+              token
+              userType
+              rooms{
+                id
+              }
+            }
+          }
+      `,
+    })
+    .catch(error => console.error(error))
+    .then(function(data){
+      userId = data.data.addUser.id
+    });
+    return userId
+  }
+
+  handleCreateRoom = async userId => {
+    console.log("Creating Room for user: " + userId)
+    let roomNumber = null
+    let playlistId = null
+    const client = new ApolloClient({
+      link: new HttpLink({ uri: "http://localhost:4000" }),
+      cache: new InMemoryCache()
+    })
+    await client.mutate({
+      variables: { userId: userId},
+      mutation: gql`
+          mutation CreateRoom($userId: ID!){
+            createRoom(userId: $userId){
+              id
+              number
+              playlists{
+                id
+              }
+            }
+          }
+      `,
+    })
+    .catch(error => console.error(error))
+    .then(function(data){
+      roomNumber = data.data.createRoom.number
+      playlistId = data.data.createRoom.playlists[0].id
+    });
+    this.setState({
+      roomNumber: roomNumber,
+      playlistId: playlistId
+    })
+  }
+
+  addToQueue = async songUri => {
+    const {playlistId} = this.state
+    let tracks = []
+    console.log(this.state)
+    console.log("Adding " + songUri + " to " + playlistId)
+    const client = new ApolloClient({
+      link: new HttpLink({ uri: "http://localhost:4000" }),
+      cache: new InMemoryCache()
+    })
+    await client.mutate({
+      variables: { playlistId: playlistId, track: songUri},
+      mutation: gql`
+          mutation insertTrack($playlistId: ID!, $track: String!){
+            insertTrack(playlistId: $playlistId, track: $track){
+              id
+              tracks
+            }
+          }
+      `,
+    })
+    .catch(error => console.error(error))
+    .then(function(data){
+      tracks = data.data.insertTrack.tracks
+    });
+    this.setState({ queue: tracks})
+    console.log(this.state)
+  }
 
   handleSearchInputChange = () => {
       this.searchURI(this.search.value);
   }
 
   get renderSearchResults(){
-    let results = <h4>No results</h4>;
+    let results = <h4></h4>;
     if (this.state.searchResults){
-      results = this.state.searchResults.map(i => <p onClick={() => this.playSongURI(i.uri)}>{i.name}</p>);
+      results = this.state.searchResults.map(i => <div className="search-result row" onClick={() => this.addToQueue(i.uri)}>{i.name}</div>);
+    }
+    return results;
+  }
+
+  get renderQueue(){
+    let results = <h4></h4>;
+    if (this.state.queue){
+      results = this.state.queue.map(i => <div className="search-result row">{i}</div>);
     }
     return results;
   }
@@ -185,6 +327,7 @@ class App extends React.Component {
       position,
       duration,
       playing,
+      roomNumber
     } = this.state;
   
     return (
@@ -193,43 +336,76 @@ class App extends React.Component {
         {error && <p>Error: {error}</p>}
   
         {loggedIn ?
-        (<div>
-          <div className="jukebox-search">
-            <input 
-              type="text"
-              placeholder="Search for music"
-              ref={input => this.search = input}
-              onChange={this.handleSearchInputChange}
-              />
-              <div id="search-results">
-                  {this.renderSearchResults}
-              </div>
+        (<div className="container">
+          <div className="row">
+            <h3> Room {roomNumber}</h3>
           </div>
-          <div className="jukebox-player">
-            <p>Artist: {artistName}</p>
-            <p>Track: {trackName}</p>
-            <p>Album: {albumName}</p>
-            <p>
-              <button onClick={() => this.onPrevClick()}>Previous</button>
-              <button onClick={() => this.onPlayClick()}>{playing ? "Pause" : "Play"}</button>
-              <button onClick={() => this.onNextClick()}>Next</button>
-            </p>
+          <div className="row">
+            <div className="jukebox-search col-lg-12 col-6">
+              <input 
+                type="text"
+                id="search-bar"
+                placeholder="Search for music"
+                ref={input => this.search = input}
+                onChange={this.handleSearchInputChange}
+                />
+            </div>
+          </div>
+          <div id="search-results row">
+              {this.renderSearchResults}
+          </div>
+          <div className="row">
+            <div className="jukebox-player col-lg-12 col-12">
+              <p id="track-name">{trackName}</p>
+              <p id="artist-name">{artistName}</p>
+              <p id="album-name">{albumName}</p>
+              <div className="player-control">
+                <span className="player-element">
+                  <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
+                </span>
+                <span className="player-element">
+                  {playing ?
+                  <i className="fas fa-pause fa-2x control-button" onClick={() => this.onPlayClick()}></i>
+                  :
+                  <i className="fas fa-play fa-2x control-button" onClick={() => this.onPlayClick()}></i>
+                  }
+                </span>
+                <span className="player-element">
+                  <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="queue row">
+                  {this.renderQueue}
           </div>
         </div>)
         :
-        (<div>
-          <p className="App-intro">
-            Enter your Spotify access token. Get it from{" "}
-            <a href="https://beta.developer.spotify.com/documentation/web-playback-sdk/quick-start/#authenticating-with-spotify">
-              here
-            </a>.
-          </p>
-          <p>
-            <input type="text" value={token} onChange={e => this.setState({ token: e.target.value })} />
-          </p>
-          <p>
-            <button onClick={() => this.handleLogin()}>Go</button>
-          </p>
+        (<div className="sign-in">
+          <div className="create-room">
+            <h3>Create a Room</h3>
+            <p className="App-intro">
+              Enter your Spotify access token. Get it from{" "}
+              <a href="https://beta.developer.spotify.com/documentation/web-playback-sdk/quick-start/#authenticating-with-spotify">
+                here
+              </a>.
+            </p>
+            <p>
+              <input className="sign-in-input" type="text" value={token} onChange={e => this.setState({ token: e.target.value })} />
+            </p>
+            <p>
+              <button className="go-button" onClick={() => this.handleLogin()}>Go</button>
+            </p>
+          </div>
+          <div className="join-room">
+            <h3>Join Room</h3>
+            <p>
+              <input className="sign-in-input" type="text" value={roomNumber} onChange={e => this.setState({ roomNumber: e.target.value })} />
+            </p>
+            <p>
+              <button className="go-button"onClick={() => this.handleJoinRoom()}>Go</button>
+            </p>
+          </div>
         </div>)
         }
       </div>

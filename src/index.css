@@ -13,3 +13,68 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+#search-bar{
+  /* width: 100%;
+  height: 40px;
+  max-width: 500px;
+  margin: 20px; */
+  margin: 30px 10px 20px 10px;
+  box-sizing: content-box;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #3F4045;
+  border-radius: 4px;
+  border: 2px solid #ccc;
+  color: white;
+  text-align: center;
+}
+
+.search-result{
+  padding: 20px 0px 10px 0px;
+  font-size: 16px;
+  background-color: #272C34;
+  color: white;
+  border: 2px solid #ccc;
+}
+
+.search-result:hover{
+  background-color: #FF5A5F;
+  color: white;
+}
+
+.player-control{
+  padding-top: 20px;
+}
+
+.jukebox-player{
+  background-color: #FF5A5F;
+  color: white;
+  margin-top: 100px;
+  padding: 0px 20px 20px 20px;
+}
+
+#search-results{
+  padding-top: 20px;
+}
+
+.player-element{
+  padding: 10px;
+}
+
+.control-button:hover{
+  color: #272C34;
+}
+
+#track-name{
+  font-size: 20px;
+}
+
+.sign-in-input{
+  background-color: white;
+  color: black;
+}
+
+.go-button{
+  background-color: #272C34;
+  color: white;
+}
