@@ -1,10 +1,18 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { ApolloClient } from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import gql from 'graphql-tag'
+import Home from './components/home'
+import Login from './components/login'
+
+import store from './store'
+import querystring from 'querystring';
+import { Provider } from "react-redux";
+import RoomContainer from './containers/RoomContainer';
+import HomeContainer from './containers/HomeContainer';
+
 
 
 class App extends React.Component {
@@ -15,7 +23,7 @@ class App extends React.Component {
       token: "",
       deviceId: "",
       loggedIn: false,
-      guest: false,
+      owner: false,
       error: "",
       trackName: "Track Name",
       artistName: "Artist Name",
@@ -27,17 +35,34 @@ class App extends React.Component {
       roomNumber: null,
       userId: null,
       playlistId: null,
-      queue: []
+      queue: [],
+      playerCheckInterval: null,
+      client_id: "91b73766037a44e7a855d5cf2b0c8768",
+      redirect_uri: `${document.location.protocol}//${document.location.host}/spotify-auth`,
+      loading: false 
     };
     this.playerCheckInterval = null;
     this.searchURI = this.searchURI.bind(this);
+    this.addToQueue = this.addToQueue.bind(this);
+
+    // if (document.location.pathname === '/spotify-auth') {
+    //   this.code = querystring.parse(document.location.search)['?code'];
+    //   console.log(this.code)
+    //   this.signInWithToken(this.code.toString())
+    // }
+    this.client = new ApolloClient({
+      link: new HttpLink({ uri: "http://localhost:4000" }),
+      cache: new InMemoryCache()
+    })
   }
+
+
 
   async handleLogin() {
     if (this.state.token !== "") {
       const userId = await this.handleCreateUser(this.state.token)
       await this.handleCreateRoom(userId)
-      this.setState({ loggedIn: true });
+      this.setState({ loggedIn: true, owner: true });
       this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000);
   
     }
@@ -175,22 +200,27 @@ class App extends React.Component {
   handleJoinRoom = async query => {
     const {roomNumber} = this.state;
     let queue = []
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
-    await client.query({
-      query: gql`
-        {
-          room(num: ${roomNumber}){
-            id
-            number
-            admin{
+    let token = null
+    let playlistId = null
+    await this.client.query({ 
+      query: gql` 
+      { 
+        room(num: ${roomNumber}){ 
+          id 
+          number
+          admin{
               id
+              token
             }
             playlists{
               id
-              tracks
+              tracks{
+                id
+                title
+                artist
+                album
+                albumArt
+              }
             }
           }
         }
@@ -198,22 +228,22 @@ class App extends React.Component {
     })
     .then(function(data){
       queue = data.data.room.playlists[0].tracks
+      token = data.data.room.admin.token
+      playlistId = data.data.room.playlists[0].id
     }) 
     .catch(error => console.error(error));
     this.setState({ 
       loggedIn: true ,
-      queue: queue
+      queue: queue,
+      token: token,
+      playlistId: playlistId
     })
   }
 
   handleCreateUser = async spotifyToken => {
     console.log(spotifyToken)
     let userId = null
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
-    await client.mutate({
+    await this.client.mutate({
       variables: { token: spotifyToken, type: "owner"},
       mutation: gql`
           mutation AddUser($token: String!, $type: String!){
@@ -267,23 +297,44 @@ class App extends React.Component {
       playlistId: playlistId
     })
   }
+  insertTrackInfo = async (track)  => {
+        return {
+          "id": track.id,
+          "title": track.title,
+          "album": track.album,
+          "artist": track.artist,
+          "albumArt": track.albumArt
+        }
+  }
+
+  updateStateTracks = (tracks) => {
+    this.setState({
+      queue: this.state.queue.concat(tracks)
+    })
+  }
 
   addToQueue = async songUri => {
-    const {playlistId} = this.state
+    const {queue, playlistId, token} = this.state
     let tracks = []
-    console.log(this.state)
+    let finalTracks = []
     console.log("Adding " + songUri + " to " + playlistId)
     const client = new ApolloClient({
       link: new HttpLink({ uri: "http://localhost:4000" }),
       cache: new InMemoryCache()
     })
     await client.mutate({
-      variables: { playlistId: playlistId, track: songUri},
+      variables: { playlistId: playlistId, track: songUri, token: token},
       mutation: gql`
-          mutation insertTrack($playlistId: ID!, $track: String!){
-            insertTrack(playlistId: $playlistId, track: $track){
+          mutation insertTrack($playlistId: ID!, $track: String!, $token: String!){
+            insertTrack(playlistId: $playlistId, track: $track, token: $token){
               id
-              tracks
+              tracks{
+                id
+                title
+                album
+                artist
+                albumArt
+              }
             }
           }
       `,
@@ -291,13 +342,43 @@ class App extends React.Component {
     .catch(error => console.error(error))
     .then(function(data){
       tracks = data.data.insertTrack.tracks
-    });
-    this.setState({ queue: tracks})
-    console.log(this.state)
+      tracks.forEach(track => finalTracks.push(track) )});
+    
+    console.log(finalTracks)
+    this.updateStateTracks(finalTracks)
   }
+
 
   handleSearchInputChange = () => {
       this.searchURI(this.search.value);
+  }
+
+  getTrackInformation = async(trackURI) => {
+    const {token} = this.state
+    let title, album, artist, albumArt = null
+    const trackId = trackURI.replace("spotify:track:", "");
+    await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => response.json())
+    .then(function(data){
+      title = data.name
+      album = data.album.name
+      artist = data.artists[0].name
+      albumArt = data.album.images[0].url
+    })
+    .catch(function (error){
+      console.log(error);
+    });
+    return {
+      title: title,
+      album: album,
+      artist: artist,
+      albumArt: albumArt
+    }
   }
 
   get renderSearchResults(){
@@ -311,15 +392,46 @@ class App extends React.Component {
   get renderQueue(){
     let results = <h4></h4>;
     if (this.state.queue){
-      results = this.state.queue.map(i => <div className="search-result row">{i}</div>);
+      results = this.state.queue.map(track => <div className="queue-result row">{track.title}</div> ); 
     }
     return results;
   }
+
+  get renderPlayableQueue(){
+    let results = <h4></h4>;
+    const {queue} = this.state
+    if (this.state.queue){
+      results = queue.map(i => this.renderTrackInfo(i)); 
+    }
+    return results;
+  
+}
+
+renderTrackInfo = (track) => {
+
+  const title = track.title
+  const artist = track.artist
+  const albumArt = track.albumArt
+  console.log(track)
+  console.log(artist)
+  return (
+  <div className="queue-result row" onClick={() => this.playSongURI(track.id)}>
+  <div className="col-4 col-lg-4 album-art">
+    <img src={albumArt} alt="Album Art"></img>
+  </div>
+  <div className="col-8 col-lg-8">
+    <div className="row">{title}</div>
+    <div className="row">{artist}</div>
+  </div>
+  </div> ) 
+}
+
 
   render() {
     const {
       token,
       loggedIn,
+      owner,
       artistName,
       trackName,
       albumName,
@@ -327,87 +439,18 @@ class App extends React.Component {
       position,
       duration,
       playing,
-      roomNumber
+      roomNumber,
+      loading
     } = this.state;
   
+    
     return (
       <div className="App">
-          <h1>Spotify Jukebox</h1>
+        <h1>Spotify Jukebox</h1>
         {error && <p>Error: {error}</p>}
-  
-        {loggedIn ?
-        (<div className="container">
-          <div className="row">
-            <h3> Room {roomNumber}</h3>
-          </div>
-          <div className="row">
-            <div className="jukebox-search col-lg-12 col-6">
-              <input 
-                type="text"
-                id="search-bar"
-                placeholder="Search for music"
-                ref={input => this.search = input}
-                onChange={this.handleSearchInputChange}
-                />
-            </div>
-          </div>
-          <div id="search-results row">
-              {this.renderSearchResults}
-          </div>
-          <div className="row">
-            <div className="jukebox-player col-lg-12 col-12">
-              <p id="track-name">{trackName}</p>
-              <p id="artist-name">{artistName}</p>
-              <p id="album-name">{albumName}</p>
-              <div className="player-control">
-                <span className="player-element">
-                  <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
-                </span>
-                <span className="player-element">
-                  {playing ?
-                  <i className="fas fa-pause fa-2x control-button" onClick={() => this.onPlayClick()}></i>
-                  :
-                  <i className="fas fa-play fa-2x control-button" onClick={() => this.onPlayClick()}></i>
-                  }
-                </span>
-                <span className="player-element">
-                  <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="queue row">
-                  {this.renderQueue}
-          </div>
-        </div>)
-        :
-        (<div className="sign-in">
-          <div className="create-room">
-            <h3>Create a Room</h3>
-            <p className="App-intro">
-              Enter your Spotify access token. Get it from{" "}
-              <a href="https://beta.developer.spotify.com/documentation/web-playback-sdk/quick-start/#authenticating-with-spotify">
-                here
-              </a>.
-            </p>
-            <p>
-              <input className="sign-in-input" type="text" value={token} onChange={e => this.setState({ token: e.target.value })} />
-            </p>
-            <p>
-              <button className="go-button" onClick={() => this.handleLogin()}>Go</button>
-            </p>
-          </div>
-          <div className="join-room">
-            <h3>Join Room</h3>
-            <p>
-              <input className="sign-in-input" type="text" value={roomNumber} onChange={e => this.setState({ roomNumber: e.target.value })} />
-            </p>
-            <p>
-              <button className="go-button"onClick={() => this.handleJoinRoom()}>Go</button>
-            </p>
-          </div>
-        </div>)
-        }
+        <Provider store={store}>
+          <HomeContainer/>
+        </Provider> 
       </div>
     );
   }

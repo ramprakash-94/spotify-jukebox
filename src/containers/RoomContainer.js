@@ -1,0 +1,156 @@
+import React from 'react'
+import Home from '../components/home'
+import Login from '../components/login'
+import {connect} from 'react-redux'
+import {BrowserRouter as Router, Route, Link} from 'react-router-dom'
+import { handleCreateRoom, handleJoinRoom } from '../actions/rootActions';
+import { Redirect } from 'react-router';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+
+function mapStateToProps(state){
+  return {
+    loggedIn: state.loggedIn,
+    userId: state.userId
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+      updateRoomInfo: (state) => dispatch(updateRoomInfo(state))
+    };
+  }
+
+const updateRoomInfo = (state) => (Object.assign({}, state, {
+            "type": "UPDATE_ROOM"
+}))
+
+class RoomContainer extends React.Component{
+    constructor(props){
+        super(props)
+        this.state = {
+            click: false,
+            loading: false,
+            loaded: false
+        }
+        console.log(this.props)
+        this.handleClick = this.handleClick.bind(this)
+        this.createRoomClick = this.createRoomClick.bind(this)
+        this.joinRoomClick = this.joinRoomClick.bind(this)
+    }
+
+    componentDidMount(){
+        if(!this.loaded){
+            return
+        }
+        this.setState()
+    }
+
+    async handleClick(userType){
+        this.setState({
+            loading: true,
+            click: true
+        })
+        if (userType === "owner"){
+            await this.createRoomClick()
+        }
+        else if (userType === "guest"){
+            await this.joinRoomClick()
+        }
+
+    }
+    async createRoomClick(){
+        Promise.resolve(handleCreateRoom(this.props.userId))
+            .then((data) => {
+                console.log(data)
+                const room = data.data.createRoom
+                this.props.updateRoomInfo({
+                    roomId: room.id,
+                    roomNumber: room.number,
+                    playlistId: room.playlists[0].id,
+                    tracks: room.playlists[0].tracks
+                })
+        }).then(this.setState({
+            loaded: true,
+            owner: true            
+        })
+        )
+    }
+
+    async joinRoomClick(){
+        Promise.resolve(handleJoinRoom(this.roomNumber.value))
+            .then((data) => {
+                console.log(data)
+                const room = data.data.room
+                this.props.updateRoomInfo({
+                    roomId: room.id,
+                    roomNumber: room.number,
+                    playlistId: room.playlists[0].id,
+                    queue: room.playlists[0].tracks
+                })
+        }).then(this.setState({
+            loaded: true,
+            owner: false
+        })
+        )
+    }
+
+    render(){
+        const {click, loading, loaded, owner} = this.state
+        if (loaded & owner){
+            return <Home owner={owner}/>
+        }
+        else if (loaded & !owner){
+            return <Home owner={owner}/>
+        }
+        else{
+            return (
+                <div className="home-container">
+                    {/* {this.props.loggedIn ?
+                    <Home/>
+                    :
+                    <Login/>
+                    } */}
+                    {
+                        click ?
+                        <div></div>
+                        :
+                        <div>
+                            <div className="create-room row">
+                                <button className="spotify-login-button" onClick={() => this.handleClick("owner")}>Create Room</button>
+                            </div>
+                            <div className="join-room row">
+                                <div className="row">
+                                    <input 
+                                        type="text"
+                                        id="join-room"
+                                        placeholder="Room Number"
+                                        ref={input => this.roomNumber = input}
+                                        />
+                                </div>
+                                <div className="row">
+                                    <button className="spotify-login-button" onClick={() => this.handleClick("guest")}>Join Room</button>
+                                </div>
+                            </div>
+
+                        </div>
+                            // {/* <Route
+                            //     path="/courses/:courseId/modules/:moduleId/lessons/:lessonId/topics/:topicId"
+                            //     component={CourseEditor}/> */}
+                    }
+                    {
+                            loading ?
+                            <div className="row loading">
+                                <FontAwesomeIcon icon={faSpinner} size="lg" spin/>
+                            </div>
+                            :
+                            <div>
+                            </div>
+                    }
+                </div>
+            )
+        }
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RoomContainer)

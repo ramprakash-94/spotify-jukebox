@@ -19,6 +19,7 @@ code {
   max-width: 500px;
   margin: 20px; */
   margin: 30px 10px 20px 10px;
+  width: 200px;
   box-sizing: content-box;
   padding: 10px;
   font-size: 16px;
@@ -32,12 +33,30 @@ code {
 .search-result{
   padding: 20px 0px 10px 0px;
   font-size: 16px;
+  width: 220px;
+  margin: auto;
+  text-align: center;
   background-color: #272C34;
   color: white;
   border: 2px solid #ccc;
 }
 
 .search-result:hover{
+  background-color: #FF5A5F;
+  color: white;
+}
+
+.queue-result{
+  padding: 20px 0px 10px 0px;
+  margin: auto;
+  width: 400px;
+  font-size: 16px;
+  background-color: #272C34;
+  color: white;
+  border: 2px solid #ccc;
+}
+
+.queue-result:hover{
   background-color: #FF5A5F;
   color: white;
 }
@@ -77,4 +96,57 @@ code {
 .go-button{
   background-color: #272C34;
   color: white;
+}
+
+img{
+  width: 80px;
+  height: 80px;
+}
+
+.go-button{
+  padding: 10px;
+}
+
+.spotify-login-button{
+  margin-top: 30px;
+  padding: 10px;
+  font-size: 20px;
+  background-color: #272C34;
+  color: white;
+}
+
+.loading{
+  margin-top: 30px;
+}
+
+.create-room{
+  margin-top: 50px;
+}
+
+.join-room{
+  margin-top: 100px;
+}
+#join-room{
+  padding: 10px;
+  font-size: 20px;
+  color: #272C34;
+  text-align: center;
+  width: 150px;
+}
+
+.art{
+  width: 50px;
+  height: 50px;
+}
+
+.track-name{
+  font-size: 16px;
+}
+
+.track-artist{
+  font-size: 12px;
+}
+
+.queue-container{
+  margin-top: 40px;
 }
