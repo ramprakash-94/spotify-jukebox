@@ -51,7 +51,7 @@ class App extends React.Component {
     //   console.log(this.code)
     //   this.signInWithToken(this.code.toString())
     // }
-    if (document.location.pathname === '.well-known/acme-challenge/gTJcLVLa4IrM5kir_fk6CBrrrqLwuqUbhuHtgefQJdc') {
+    if (document.location.pathname === '/.well-known/acme-challenge/gTJcLVLa4IrM5kir_fk6CBrrrqLwuqUbhuHtgefQJdc') {
       const text = "gTJcLVLa4IrM5kir_fk6CBrrrqLwuqUbhuHtgefQJdc.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0"
       document.documentElement.innerHTML = text
       // const element = document.createElement("a");
