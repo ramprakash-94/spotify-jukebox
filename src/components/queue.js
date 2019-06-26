@@ -14,7 +14,7 @@ class Queue extends React.Component{
         this.renderTrackInfoGuest = this.renderTrackInfoGuest.bind(this)
     }
     componentDidMount(){
-        console.log(this.props.owner)
+        console.log(this.props.queue)
     }
     renderQueue(){
         let results = <h4>No tracks in the queue</h4>;
@@ -28,7 +28,7 @@ class Queue extends React.Component{
         let results = <h4>No tracks in the queue</h4>;
         const {queue} = this.props
         if (this.props.queue){
-        results = queue.map(i => this.renderTrackInfo(i)); 
+        results = this.props.queue.map(i => this.renderTrackInfo(i)); 
         }
         return results;
     
@@ -69,6 +69,9 @@ class Queue extends React.Component{
     }
 
     render(){
+        const {queue} = this.props
+        console.log(this.props)
+        console.log(queue)
         return(
             <div className="queue-container">
                 <div className="row">
@@ -78,11 +81,11 @@ class Queue extends React.Component{
                 </div>
                 {this.props.owner ?
                 <div className="queue row">
-                    {this.props.queue.map(i => this.renderTrackInfoOwner(i))}
+                    {queue.map(i => this.renderTrackInfoOwner(i))}
                 </div>
                 :
                 <div className="queue row">
-                    {this.props.queue.map(i => this.renderTrackInfoGuest(i))}
+                    {queue.map(i => this.renderTrackInfoGuest(i))}
                 </div>
                 }
             </div>

@@ -6,8 +6,9 @@ import Queue from './queue'
 import { ApolloClient } from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import {popTrack, getAllTracks} from '../actions/rootActions'
+import {popTrack, getAllTracks, handleJoinRoom} from '../actions/rootActions'
 import gql from 'graphql-tag'
+import {addToPlaylist, updateRoom} from '../actions/serverActions'
 
 function mapStateToProps(state){
     return state
@@ -15,7 +16,8 @@ function mapStateToProps(state){
 
 function mapDispatchToProps(dispatch) {
     return {
-      updateTracks: (state) => dispatch(updateTracks(state))
+      updateTracks: (state) => dispatch(updateTracks(state)),
+      updatePlayer: (state) => dispatch(updatePlayer(state))
     };
   }
 
@@ -23,23 +25,14 @@ const updateTracks = (state) => (Object.assign({}, state, {
             "type": "UPDATE_TRACKS"
 }))
 
+const updatePlayer = (state) => (Object.assign({}, state, {
+            "type": "UPDATE_PLAYER"
+}))
+
 class Home extends React.Component{
     constructor(props){
         super(props)
         this.playerCheckInterval = null
-        this.state = {
-            trackName: "Track",
-            artistName: "Artist",
-            albumName: "Album",
-            owner: this.props.owner,
-            playing: false,
-            token: this.props.token,
-            userId: this.props.userId,
-            roomNumber: this.props.roomNumber,
-            playlistId: this.props.playlistId,
-            playlistURI: this.props.playlistURI,
-            queue: []
-        }
         console.log(this.props)
         this.createPlaylist = this.createPlaylist.bind(this)
         this.updateTracks = this.updateTracks.bind(this)
@@ -51,11 +44,23 @@ class Home extends React.Component{
     }
 
     componentDidUpdate(){
-      const {duration, position} = this.state
+      const {duration, position, currentTrack, playing, trackURI} = this.props
       if (duration - position <= 1000){
         console.log("Next song")
         this.playNextTrack()
       }
+
+      if (currentTrack === trackURI | this.props.roomNumber === null){
+        return
+      }
+
+      updateRoom(
+        this.props.roomNumber, 
+        trackURI, 
+        position,
+        duration,
+        playing,
+        this.props.token)
     }
     updateTracks(tracks){
       this.props.updateTracks({
@@ -67,18 +72,21 @@ class Home extends React.Component{
         if (this.props.owner === true){
           this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000);
         }
-        let tracks = []
+        let currentTrack = null
+        let tracks = null
         this.updateStateTimeout = setInterval(() => {
             getAllTracks(this.props.playlistId).then(function(data){
+              console.log(data)
               tracks = data.data.allTracksInPlaylist.tracks
             })
-            this.updateTracks(tracks)
-          }, 3000)
-        this.setState({
-          queue: tracks
-        })
+            if (tracks !== null){
+              this.updateTracks(tracks)
+            }
+          }, 5000)
 
-        // this.playPlaylist(this.state.playlistURI)
+        // this.setState({
+        //   queue: tracks
+        // })
     }
   onPrevClick() {
     this.player.previousTrack();
@@ -95,24 +103,26 @@ class Home extends React.Component{
 
   playNextTrack(){
     const {queue} = this.props
-    const track = queue.shift()
     if (queue !== undefined & queue.length > 0){
-      this.playTrack(track.id)
+      const track = queue.shift()
+      console.log(track)
+      this.playTrack(track.uri)
       let tracks = []
       popTrack(this.props.playlistId).then(function(data){
           tracks = data.data.popTrack.tracks
       })
+      console.log(this.props)
       this.props.updateTracks(tracks)
-      this.setState({
-        queue: tracks
-      })
+      // this.setState({
+      //   queue: tracks
+      // })
     }
   }
 
   playTrack(uri){
-    const { deviceId, token } = this.state;
-    // console.log(deviceId)
-    // console.log(uri)
+    const { deviceId, token } = this.props;
+    console.log(deviceId)
+    console.log(uri)
     fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
       method: "PUT",
       headers: {
@@ -127,7 +137,7 @@ class Home extends React.Component{
 
   checkForPlayer() {
     const { token } = this.props;
-    // console.log(token)
+    console.log(token)
     // console.log("Checking Player at " + this.getDate())
   
     if (window.Spotify !== null) {
@@ -161,7 +171,11 @@ class Home extends React.Component{
       let { device_id, user_id} = data;
       console.log(device_id)
       console.log("Let the music play on!");
-      await this.setState({ deviceId: device_id, player: this.player });
+      // await this.setState({ deviceId: device_id, player: this.player });
+      this.props.updatePlayer({
+        "deviceId": device_id,
+        "player": this.player
+      })
       this.transferPlaybackHere();
       // this.playPlaylist("spotify:playlist:3c16xCB2ulN8s9VS3zCqck")
     });
@@ -191,13 +205,24 @@ class Home extends React.Component{
         playing,
         trackURI
       });
+      this.props.updatePlayer({
+        position: position,
+        duration: duration,
+        trackName: trackName,
+        albumName: albumName,
+        artistName: artistName,
+        playing: playing,
+        trackURI: trackURI
+      })
     }
     // return state stuff
   }
   
    transferPlaybackHere() {
      console.log("Transferring playback")
-    const { deviceId, token } = this.state;
+    const { deviceId, token } = this.props;
+    console.log(deviceId)
+    console.log(token)
     fetch("https://api.spotify.com/v1/me/player", {
       method: "PUT",
       headers: {
@@ -212,7 +237,7 @@ class Home extends React.Component{
   }
 
   searchURI = async searchQuery =>{
-    const {token } = this.state;
+    const {token } = this.props;
     console.log(searchQuery)
     const items = [];
     await fetch(`https://api.spotify.com/v1/search?q=${searchQuery}&type=track&limit=5`, {
@@ -238,7 +263,7 @@ class Home extends React.Component{
   }
 
   getUserInfo = async () => {
-    const {token } = this.state;
+    const {token } = this.props;
     let user_id = null;
     await fetch(`https://api.spotify.com/v1/me`, {
       method: "GET",
@@ -262,7 +287,7 @@ class Home extends React.Component{
 
   addToQueue = async(songUri) => {
         let tracks = null
-        await Promise.resolve(this.addToPlaylist(songUri))
+        await Promise.resolve(addToPlaylist(this.props.playlistId, songUri, this.props.token))
             .then((data) => {
               console.log(data)
               tracks = data.data.insertTrack.tracks
@@ -274,65 +299,9 @@ class Home extends React.Component{
   }
 
 
-  addToPlaylist = async(songUri) => {
-      console.log("Song to be added to queue: " + songUri)
-      // const {playlistId, token} = this.props
-      // console.log(playlistId)
-      // console.log(songUri)
-      // return fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-      //   method: "POST",
-      //   headers: {
-      //     authorization: `Bearer ${token}`,
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     "uris": [songUri]
-      //   }),
-      // }).then(response => response.json())
-      // // .then(function(data){
-      // //     console.log(data)
-      // // })
-      // // .catch(function (error){
-      // //   console.log(error);
-      // // });
-    const {queue, playlistId, token} = this.props
-    let tracks = []
-    let finalTracks = []
-    console.log("Adding " + songUri + " to " + playlistId)
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
-    return client.mutate({
-      variables: { playlistId: playlistId, track: songUri, token: token},
-      mutation: gql`
-          mutation insertTrack($playlistId: ID!, $track: String!, $token: String!){
-            insertTrack(playlistId: $playlistId, track: $track, token: $token){
-              id
-              tracks{
-                id
-                title
-                album
-                artist
-                albumArt
-              }
-            }
-          }
-      `,
-    })
-    .catch(error => console.error(error))
-    // .then(function(data){
-    //   tracks = data.data.insertTrack.tracks
-    //   this.props.updateTracks(tracks)
-    //   // tracks.forEach(track => finalTracks.push(track) 
-    //   });
-    
-    // console.log(finalTracks)
-    // this.updateStateTracks(finalTracks)
-  }
 
   createPlaylist = async () => {
-    const {token, userId, roomNumber} = this.state;
+    const {token, userId, roomNumber} = this.props;
     console.log(token)
     let playlistURI = null
     let playlistId = null
@@ -371,29 +340,28 @@ class Home extends React.Component{
                     <h3> Room {this.props.roomNumber}</h3>
                 </div>
                 <div className="row">
-                    <SearchBar token={this.state.token}/>
+                    <SearchBar token={this.props.token}/>
                 </div>
                 <div className="row">
                   <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue}/>
                 </div>
                 <div className="row jukebox-player col-lg-12 col-12">
                   <div className="row">
-                    <p id="track-name">{this.state.trackName}</p>
+                    <p id="track-name">{this.props.trackName}</p>
                   </div>
                   <div className="row">
-                    <p id="artist-name">{this.state.artistName}</p>
+                    <p id="artist-name">{this.props.artistName}</p>
                   </div>
                   <div className="row">
-                    <p id="album-name">{this.state.albumName}</p>
+                    <p id="album-name">{this.props.albumName}</p>
                   </div>
                   <div className="row">
-                    {this.state.owner ?
                     <div className="player-control">
                         <span className="player-element">
                         <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
                         </span>
                         <span className="player-element">
-                        {this.state.playing ?
+                        {this.props.playing ?
                         <i className="fas fa-pause fa-2x control-button" onClick={() => this.onPlayClick()}></i>
                         :
                         <i className="fas fa-play fa-2x control-button" onClick={() => this.onPlayClick()}></i>
@@ -403,13 +371,10 @@ class Home extends React.Component{
                         <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
                         </span>
                     </div>
-                    :
-                    <div></div>
-                    }
                   </div>
                 </div>
                 <div className="row">
-                  <Queue playTrack={this.playTrack} tracks={this.state.queue} owner={this.props.owner}/>
+                  <Queue playTrack={this.playTrack} queue={this.props.queue} owner={this.props.owner}/>
                 </div>
               </div>
             </div>

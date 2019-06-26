@@ -3,10 +3,11 @@ import Home from '../components/home'
 import Login from '../components/login'
 import {connect} from 'react-redux'
 import {BrowserRouter as Router, Route, Link} from 'react-router-dom'
-import { handleCreateRoom, handleJoinRoom } from '../actions/rootActions';
+import { handleCreateRoom, handleJoinRoom } from '../actions/serverActions';
 import { Redirect } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import GuestHome from '../components/guestHome'
 
 function mapStateToProps(state){
   return {
@@ -53,28 +54,39 @@ class RoomContainer extends React.Component{
         })
         if (userType === "owner"){
             await this.createRoomClick()
+            this.setState({
+                loaded: true,
+                owner: true
+            })
         }
         else if (userType === "guest"){
             await this.joinRoomClick()
+            this.setState({
+                loaded: true,
+                owner: false
+            })
         }
+        
+
 
     }
     async createRoomClick(){
         Promise.resolve(handleCreateRoom(this.props.userId))
             .then((data) => {
+                console.log("Room Created")
                 console.log(data)
                 const room = data.data.createRoom
                 this.props.updateRoomInfo({
                     roomId: room.id,
                     roomNumber: room.number,
                     playlistId: room.playlists[0].id,
-                    tracks: room.playlists[0].tracks
+                    tracks: room.playlists[0].tracks,
+                    playing: room.playing,
+                    duration: room.duration,
+                    position: room.position,
+                    currentTrack: room.currentTrack
                 })
-        }).then(this.setState({
-            loaded: true,
-            owner: true            
-        })
-        )
+        })        
     }
 
     async joinRoomClick(){
@@ -86,13 +98,9 @@ class RoomContainer extends React.Component{
                     roomId: room.id,
                     roomNumber: room.number,
                     playlistId: room.playlists[0].id,
-                    queue: room.playlists[0].tracks
+                    currentTrack: room.currentTrack
                 })
-        }).then(this.setState({
-            loaded: true,
-            owner: false
         })
-        )
     }
 
     render(){
@@ -101,7 +109,7 @@ class RoomContainer extends React.Component{
             return <Home owner={owner}/>
         }
         else if (loaded & !owner){
-            return <Home owner={owner}/>
+            return <GuestHome owner={owner}/>
         }
         else{
             return (

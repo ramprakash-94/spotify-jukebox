@@ -26,6 +26,7 @@ function rootReducer (state = initialState, action){
     switch(action.type){
         case "UPDATE_PLAYER":
             console.log("Updated Player")
+            console.log(action)
             return Object.assign({}, state, action)
         case "UPDATE_SEARCH_RESULTS":
             return Object.assign({}, state, action)

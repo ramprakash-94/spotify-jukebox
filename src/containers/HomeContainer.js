@@ -8,6 +8,12 @@ import gql from 'graphql-tag'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import RoomContainer from './RoomContainer';
+import url from '../config'
+
+const client = new ApolloClient({
+link: new HttpLink({ uri: url }),
+cache: new InMemoryCache()
+})
 
 function mapStateToProps(state){
   return {
@@ -55,10 +61,6 @@ class HomeContainer extends React.Component{
     }
 
     signInWithToken = async (token) => {
-        const client = new ApolloClient({
-        link: new HttpLink({ uri: "http://localhost:4000" }),
-        cache: new InMemoryCache()
-        })
         let user = null
         await client.mutate({ 
         variables: { code: token},

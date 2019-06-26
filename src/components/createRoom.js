@@ -1,6 +1,7 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {handleCreateRoom, handleCreateUser} from '../actions/rootActions'
+import {handleCreateUser} from '../actions/rootActions'
+import {handleCreateRoom } from '../actions/serverActions'
 
 function mapDispatchToProps(dispatch) {
     return {

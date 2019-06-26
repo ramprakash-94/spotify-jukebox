@@ -3,6 +3,7 @@ import { ApolloClient } from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import gql from 'graphql-tag'
+import url from '../config'
 
 export function updateToken(payload){
     return ({
@@ -11,34 +12,35 @@ export function updateToken(payload){
     })
 }
 
-export function handleLogin(token){
-  return async dispatch => {
-      console.log("Handling Login")
-      if (token !== "") {
-        const userId = await handleCreateUser(token)
-        const {roomNumber, playlistId} = await handleCreateRoom(userId)
-        const playerCheckInterval = setInterval(() => checkForPlayer(token), 1000);
-        clearInterval(playerCheckInterval);
-        dispatch({
-          "type": "UPDATE_TOKEN",
-          "token": token,
-          "loggedIn": true,
-          "owner": true,
-          "playerCheckInterval": playerCheckInterval,
-          "roomNumber": roomNumber,
-          "playlistId": playlistId
-        })
-      }
-  }
-}
+const client = new ApolloClient({
+  link: new HttpLink({ uri: url}),
+  cache: new InMemoryCache()
+})
+
+// export function handleLogin(token){
+//   return async dispatch => {
+//       console.log("Handling Login")
+//       if (token !== "") {
+//         const userId = await handleCreateUser(token)
+//         const {roomNumber, playlistId} = await handleCreateRoom(userId)
+//         const playerCheckInterval = setInterval(() => checkForPlayer(token), 1000);
+//         clearInterval(playerCheckInterval);
+//         dispatch({
+//           "type": "UPDATE_TOKEN",
+//           "token": token,
+//           "loggedIn": true,
+//           "owner": true,
+//           "playerCheckInterval": playerCheckInterval,
+//           "roomNumber": roomNumber,
+//           "playlistId": playlistId
+//         })
+//       }
+//   }
+// }
 
   export async function handleCreateUser(spotifyToken){
     console.log(spotifyToken)
     let userId = null
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
     await client.mutate({
       variables: { token: spotifyToken, type: "owner"},
       mutation: gql`
@@ -61,43 +63,8 @@ export function handleLogin(token){
     return userId
   }
 
-export async function handleCreateRoom (userId){
-    console.log("Creating Room for user: " + userId)
-    let roomNumber = null
-    let playlistId = null
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
-    return client.mutate({
-      variables: { userId: userId},
-      mutation: gql`
-          mutation CreateRoom($userId: ID!){
-            createRoom(userId: $userId){
-              id
-              number
-              playlists{
-                id
-                tracks {
-                  id
-                }
-              }
-            }
-          }
-      `,
-    })
-    // .then(function(data){
-    //   roomNumber = data.data.createRoom.number
-    //   playlistId = data.data.createRoom.playlists[0].id
-    // })
-    .catch(error => console.error(error))
-  }
 
   export async function popTrack (playlistId){
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
     console.log(playlistId)
     return client.mutate({
       variables: { playlistId: playlistId},
@@ -110,34 +77,8 @@ export async function handleCreateRoom (userId){
                 artist
                 album
                 albumArt
+                uri
               }
-          }
-        }
-      `,
-    }).catch(error => console.error(error));
-  }
-export async function handleJoinRoom (roomNumber){
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
-    console.log(roomNumber)
-    return client.query({
-      query: gql` 
-      { 
-        room(num: ${roomNumber}){ 
-          id 
-          number
-          playlists{
-            id
-            tracks{
-              id
-              title
-              artist
-              album
-              albumArt
-            }
-          }
           }
         }
       `,
@@ -145,12 +86,12 @@ export async function handleJoinRoom (roomNumber){
   }
 
   export async function getAllTracks (playlistId){
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
     let id = playlistId
     console.log(id)
+    const client = new ApolloClient({
+      link: new HttpLink({ uri: url}),
+      cache: new InMemoryCache()
+    })
     return client.query({
       query: gql`{ 
         allTracksInPlaylist(id: ${id}){
@@ -161,6 +102,7 @@ export async function handleJoinRoom (roomNumber){
              artist
              album
              albumArt
+             uri
            }
           }
         }
@@ -276,10 +218,6 @@ export async function handleJoinRoom (roomNumber){
     let tracks = []
     let finalTracks = []
     console.log("Adding " + songUri + " to " + playlistId)
-    const client = new ApolloClient({
-      link: new HttpLink({ uri: "http://localhost:4000" }),
-      cache: new InMemoryCache()
-    })
     await client.mutate({
       variables: { playlistId: playlistId, track: songUri, token: token},
       mutation: gql`
@@ -306,4 +244,31 @@ export async function handleJoinRoom (roomNumber){
     
     // console.log(finalTracks)
     // this.updateStateTracks(finalTracks)
+  }
+
+  export async function getTrackInformation (trackURI, token){
+    let title, album, artist, albumArt = null
+    const trackId = trackURI.replace("spotify:track:", "");
+    await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => response.json())
+    .then(function(data){
+      title = data.name
+      album = data.album.name
+      artist = data.artists[0].name
+      albumArt = data.album.images[0].url
+    })
+    .catch(function (error){
+      console.log(error);
+    });
+    return {
+      trackName: title,
+      albumName: album,
+      artistName: artist,
+      albumArt: albumArt
+    }
   }
