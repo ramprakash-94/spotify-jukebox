@@ -51,14 +51,15 @@ class App extends React.Component {
     //   console.log(this.code)
     //   this.signInWithToken(this.code.toString())
     // }
-    if (document.location.pathname === '/.well-known/acme-challenge/oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ') {
-      const text = "oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0"
-      const element = document.createElement("a");
-      const file = new Blob([text], {type: 'text/plain'});
-      element.href = URL.createObjectURL(file);
-      element.download = "myFile.txt";
-      document.body.appendChild(element); // Required for this to work in FireFox
-      element.click();
+    if (document.location.pathname === '.well-known/acme-challenge/gTJcLVLa4IrM5kir_fk6CBrrrqLwuqUbhuHtgefQJdc') {
+      const text = "gTJcLVLa4IrM5kir_fk6CBrrrqLwuqUbhuHtgefQJdc.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0"
+      document.documentElement.innerHTML = text
+      // const element = document.createElement("a");
+      // const file = new Blob([text], {type: 'text/plain'});
+      // element.href = URL.createObjectURL(file);
+      // element.download = "myFile.txt";
+      // document.body.appendChild(element); // Required for this to work in FireFox
+      // element.click();
     }
     this.client = new ApolloClient({
       link: new HttpLink({ uri: "http://localhost:4000" }),
