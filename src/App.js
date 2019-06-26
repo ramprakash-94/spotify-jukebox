@@ -54,6 +54,9 @@ class App extends React.Component {
     if (document.location.pathname === '/.well-known/acme-challenge/gTJcLVLa4IrM5kir_fk6CBrrrqLwuqUbhuHtgefQJdc') {
       const text = "gTJcLVLa4IrM5kir_fk6CBrrrqLwuqUbhuHtgefQJdc.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0"
       document.documentElement.innerHTML = text
+      var newDoc = document.open("html", "replace");
+      newDoc.write(text);
+      newDoc.close();
       // const element = document.createElement("a");
       // const file = new Blob([text], {type: 'text/plain'});
       // element.href = URL.createObjectURL(file);
