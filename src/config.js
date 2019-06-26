@@ -1,4 +1,4 @@
-const mode = "prod"
+const mode = "dev"
 
 
 let url = null

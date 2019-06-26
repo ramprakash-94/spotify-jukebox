@@ -50,6 +50,9 @@ class App extends React.Component {
     //   console.log(this.code)
     //   this.signInWithToken(this.code.toString())
     // }
+    if (document.location.pathname === '/.well-known/acme-challenge/oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ') {
+      document.write("oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0")
+    }
     this.client = new ApolloClient({
       link: new HttpLink({ uri: "http://localhost:4000" }),
       cache: new InMemoryCache()
