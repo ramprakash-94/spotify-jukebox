@@ -39,7 +39,8 @@ class App extends React.Component {
       playerCheckInterval: null,
       client_id: "91b73766037a44e7a855d5cf2b0c8768",
       redirect_uri: `${document.location.protocol}//${document.location.host}/spotify-auth`,
-      loading: false 
+      loading: false,
+      certbot: false
     };
     this.playerCheckInterval = null;
     this.searchURI = this.searchURI.bind(this);
@@ -51,7 +52,13 @@ class App extends React.Component {
     //   this.signInWithToken(this.code.toString())
     // }
     if (document.location.pathname === '/.well-known/acme-challenge/oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ') {
-      document.write("oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0")
+      const text = "oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0"
+      const element = document.createElement("a");
+      const file = new Blob([text], {type: 'text/plain'});
+      element.href = URL.createObjectURL(file);
+      element.download = "myFile.txt";
+      document.body.appendChild(element); // Required for this to work in FireFox
+      element.click();
     }
     this.client = new ApolloClient({
       link: new HttpLink({ uri: "http://localhost:4000" }),
@@ -449,11 +456,20 @@ renderTrackInfo = (track) => {
     
     return (
       <div className="App">
-        <h1>Spotify Jukebox</h1>
-        {error && <p>Error: {error}</p>}
-        <Provider store={store}>
-          <HomeContainer/>
-        </Provider> 
+        { this.state.certbot ?
+          <div>
+           oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0       
+          </div>
+          :
+        <div>
+          <h1>Spotify Jukebox</h1>
+          {error && <p>Error: {error}</p>}
+          <Provider store={store}>
+            <HomeContainer/>
+          </Provider> 
+        </div>
+
+      }
       </div>
     );
   }
