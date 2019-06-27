@@ -343,7 +343,7 @@ class Home extends React.Component{
                     <SearchBar token={this.props.token}/>
                 </div>
                 <div className="row">
-                  <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue}/>
+                  <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue} queue={this.props.queue}/>
                 </div>
                 <div className="row jukebox-player col-lg-12 col-12">
                   <div className="row">

@@ -13,13 +13,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+.jukebox-search{
+  position: relative;
+}
+
 #search-bar{
   /* width: 100%;
   height: 40px;
   max-width: 500px;
   margin: 20px; */
   margin: 30px 10px 20px 10px;
-  width: 200px;
+  width: 240px;
   box-sizing: content-box;
   padding: 10px;
   font-size: 16px;
@@ -33,7 +37,7 @@ code {
 .search-result{
   padding: 20px 0px 10px 0px;
   font-size: 16px;
-  width: 220px;
+  width: 300px;
   margin: auto;
   text-align: center;
   background-color: #272C34;
@@ -149,4 +153,18 @@ img{
 
 .queue-container{
   margin-top: 40px;
+}
+
+.added-track{
+  color: green;
+}
+
+.add-track{
+  color: whitesmoke;
+}
+
+.clear-search{
+  position: relative; 
+  margin-left: -40px;
+  
 }

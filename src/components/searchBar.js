@@ -1,5 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 function mapDispatchToProps(dispatch) {
     return {
@@ -18,11 +20,17 @@ class SearchBar extends React.Component{
             token: this.props.token
         }
         this.handleSearchInputChange = this.handleSearchInputChange.bind(this)
+        this.clearSearchInput = this.clearSearchInput.bind(this)
         this.searchURI = this.searchURI.bind(this)
     }
 
     handleSearchInputChange(){
         this.searchURI(this.search.value);
+    }
+
+    clearSearchInput(){
+      this.search.value = ""
+      this.props.updateSearchResults([])
     }
 
   searchURI = async searchQuery =>{
@@ -60,6 +68,7 @@ class SearchBar extends React.Component{
                     ref={input => this.search = input}
                     onChange={this.handleSearchInputChange}
                     />
+                    <FontAwesomeIcon icon={faTimes} className="clear-search" onClick={() => this.clearSearchInput()}/>
             </div>
         )
     }
