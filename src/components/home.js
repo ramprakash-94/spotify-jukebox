@@ -189,12 +189,13 @@ class Home extends React.Component{
       const duration = state.duration
       const trackName = currentTrack.name;
       const albumName = currentTrack.album.name;
+      const albumArt = currentTrack.album.images[0].url
       const artistName = currentTrack.artists
         .map(artist => artist.name)
         .join(", ");
       const trackURI = currentTrack.uri
       const playing = !state.paused;
-      // console.log(state)
+      console.log(state)
       this.setState({
         position,
         duration,
@@ -202,7 +203,8 @@ class Home extends React.Component{
         albumName,
         artistName,
         playing,
-        trackURI
+        trackURI,
+        albumArt
       });
       this.props.updatePlayer({
         position: position,
@@ -211,7 +213,8 @@ class Home extends React.Component{
         albumName: albumName,
         artistName: artistName,
         playing: playing,
-        trackURI: trackURI
+        trackURI: trackURI,
+        albumArt: albumArt
       })
     }
     // return state stuff
@@ -334,7 +337,6 @@ class Home extends React.Component{
     render(){
         return (
             <div className="home-page">
-              <div className="container">
                 <div className="row">
                     <h3> Room {this.props.roomNumber}</h3>
                 </div>
@@ -345,17 +347,29 @@ class Home extends React.Component{
                   <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue} queue={this.props.queue}/>
                 </div>
                 <div className="row jukebox-player col-lg-12 col-12">
-                  <div className="row">
-                    <p id="track-name">{this.props.trackName}</p>
+                  <div className="current-track-details">
+                  {
+                    (this.props.albumArt !== null) ?
+                    <span>
+                        <img className="album-art-player" src={this.props.albumArt} alt="Album Art"></img>
+                    </span>
+                    :
+                    <span className="col-xs-4 col-lg-4 album-art">
+                    </span>
+                  }
+                  <span>
+                    <div className="row">
+                      <p id="track-name">{this.props.trackName}</p>
+                    </div>
+                    <div className="row">
+                      <p id="artist-name">{this.props.artistName}</p>
+                    </div>
+                    <div className="row">
+                      <p id="album-name">{this.props.albumName}</p>
+                    </div>
+                  </span>
                   </div>
-                  <div className="row">
-                    <p id="artist-name">{this.props.artistName}</p>
-                  </div>
-                  <div className="row">
-                    <p id="album-name">{this.props.albumName}</p>
-                  </div>
-                  <div className="row">
-                    <div className="player-control">
+                  <div className="row player-control">
                         <span className="player-element">
                         <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
                         </span>
@@ -369,13 +383,11 @@ class Home extends React.Component{
                         <span className="player-element">
                         <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
                         </span>
-                    </div>
                   </div>
                 </div>
                 <div className="row">
                   <Queue playTrack={this.playTrack} queue={this.props.queue} owner={this.props.owner}/>
                 </div>
-              </div>
             </div>
         )
     }
