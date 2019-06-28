@@ -40,11 +40,11 @@ class Queue extends React.Component{
     const artist = track.artist
     const albumArt = track.albumArt
     return (
-    <div className="queue-result row" onClick={() => this.props.playTrack(track.uri)}>
-        <div className="col-4 col-lg-4 album-art">
+    <div className="queue-result row" onClick={() => this.props.playTrack(track.uri)} key={track.uri}>
+        <div className="col-xs-4 col-lg-4 album-art">
             <img className="art" src={albumArt} alt="Album Art"></img>
         </div>
-        <div className="col-8 col-lg-8">
+        <div className="col-xs-8 col-lg-8">
             <div className="row track-title">{title}</div>
             <div className="row track-artist">{artist}</div>
         </div>
@@ -57,11 +57,11 @@ class Queue extends React.Component{
     const artist = track.artist
     const albumArt = track.albumArt
     return (
-    <div className="queue-result row">
-        <div className="col-4 col-lg-4 album-art">
+    <div className="queue-result row" key={track.uri}>
+        <div className="col-xs-4 col-lg-4 album-art">
             <img className="art" src={albumArt} alt="Album Art"></img>
         </div>
-        <div className="col-8 col-lg-8">
+        <div className="col-xs-8 col-lg-8">
             <div className="row track-title">{title}</div>
             <div className="row track-artist">{artist}</div>
         </div>

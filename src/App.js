@@ -6,6 +6,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import gql from 'graphql-tag'
 import Home from './components/home'
 import Login from './components/login'
+import HttpsRedirect from 'react-https-redirect'
 
 import store from './store'
 import querystring from 'querystring';
@@ -459,22 +460,24 @@ renderTrackInfo = (track) => {
   
     
     return (
-      <div className="App">
-        { this.state.certbot ?
+      <HttpsRedirect>
+        <div className="App">
+          { this.state.certbot ?
+            <div>
+            oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0       
+            </div>
+            :
           <div>
-           oz6nCF9UIkbh4Yybx_Vmv4r8pP4RRrL-wTpDA7Vu-fQ.PuwB8unGT8GfGGdjgLjyjjaZI-kpzsrVRedEq-95cF0       
+            <h1>Spotify Jukebox</h1>
+            {error && <p>Error: {error}</p>}
+            <Provider store={store}>
+              <HomeContainer/>
+            </Provider> 
           </div>
-          :
-        <div>
-          <h1>Spotify Jukebox</h1>
-          {error && <p>Error: {error}</p>}
-          <Provider store={store}>
-            <HomeContainer/>
-          </Provider> 
-        </div>
 
-      }
-      </div>
+        }
+        </div>
+      </HttpsRedirect>
     );
   }
 }

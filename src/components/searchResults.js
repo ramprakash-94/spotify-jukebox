@@ -1,11 +1,30 @@
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faCheck } from '@fortawesome/free-solid-svg-icons'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 class SearchResults extends React.Component{
     constructor(props){
         super(props)
         this.searchElement = this.searchElement.bind(this)
+        this.addTrack = this.addTrack.bind(this)
+        this.state = {
+            loading: null
+        }
+    }
+    componentDidMount(){
+        if (this.state.loading !== null && this.props.queue.includes(this.state.loading)){
+            this.setState({
+                loading: null
+            })
+        }
+    }
+
+    addTrack(uri){
+        this.props.addToQueue(uri)
+        this.setState({
+            loading: uri
+        })
     }
 
     searchElement(track){
@@ -24,8 +43,16 @@ class SearchResults extends React.Component{
                         <FontAwesomeIcon icon={faCheck} className="added-track"/>
                     </div>
                     :
-                    <div classname="col-xs-2 col-lg-2" onClick={() => this.props.addToQueue(track.uri)}>
-                        <FontAwesomeIcon icon={faPlus} className="add-track"/>
+                    <div>
+                    {
+                        (this.state.loading === track.uri) ?
+                            <FontAwesomeIcon icon={faSpinner} size="lg" spin/>
+                        :
+                        <div classname="col-xs-2 col-lg-2" onClick={() => this.addTrack(track.uri)}>
+                            <FontAwesomeIcon icon={faPlus} className="add-track"/>
+                        </div>
+                        
+                    }
                     </div>
                 }
         </div>

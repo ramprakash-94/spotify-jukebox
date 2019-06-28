@@ -104,15 +104,14 @@ class Home extends React.Component{
   playNextTrack(){
     const {queue} = this.props
     if (queue !== undefined & queue.length > 0){
-      const track = queue.shift()
-      console.log(track)
+      const track = queue[0]
       this.playTrack(track.uri)
       let tracks = []
       popTrack(this.props.playlistId).then(function(data){
           tracks = data.data.popTrack.tracks
       })
       console.log(this.props)
-      this.props.updateTracks(tracks)
+      // this.props.updateTracks(tracks)
       // this.setState({
       //   queue: tracks
       // })

@@ -58,7 +58,7 @@ class GuestHome extends React.Component{
               console.log(data)
               tracks = data.data.insertTrack.tracks
         })  
-        this.props.updateTracks({"queue": tracks})
+        // this.props.updateTracks({"queue": tracks})
         // this.setState({
         //   queue: tracks
         // })
