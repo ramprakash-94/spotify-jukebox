@@ -9,6 +9,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 import {popTrack, getAllTracks, handleJoinRoom} from '../actions/rootActions'
 import gql from 'graphql-tag'
 import {addToPlaylist, updateRoom} from '../actions/serverActions'
+import TrackProgress from './progressBar'
 
 function mapStateToProps(state){
     return state
@@ -37,6 +38,7 @@ class Home extends React.Component{
         this.createPlaylist = this.createPlaylist.bind(this)
         this.updateTracks = this.updateTracks.bind(this)
         this.playTrack = this.playTrack.bind(this)
+        this.changeTrack = true
     }
 
     componentDidMount(){
@@ -45,9 +47,9 @@ class Home extends React.Component{
 
     componentDidUpdate(){
       const {duration, position, currentTrack, playing, trackURI} = this.props
-      if (duration - position <= 1000){
-        console.log("Next song")
+      if (duration - position <= 1000 & !playing & this.changeTrack){
         this.playNextTrack()
+        this.changeTrack = false
       }
 
       if (currentTrack === trackURI | this.props.roomNumber === null){
@@ -61,6 +63,8 @@ class Home extends React.Component{
         duration,
         playing,
         this.props.token)
+
+      this.changeTrackTimeout = setTimeout(() => this.changeTrack = true, 3000)
     }
     updateTracks(tracks){
       this.props.updateTracks({
@@ -76,13 +80,20 @@ class Home extends React.Component{
         let tracks = null
         this.updateStateTimeout = setInterval(() => {
             getAllTracks(this.props.playlistId).then(function(data){
-              console.log(data)
               tracks = data.data.allTracksInPlaylist.tracks
             })
             if (tracks !== null){
               this.updateTracks(tracks)
             }
           }, 5000)
+
+        const {position, duration, playing} = this.props
+        let newPos = null
+        if (newPos !== null){
+          this.props.updatePlayer({
+            position: newPos
+          })
+        }
 
         // this.setState({
         //   queue: tracks
@@ -105,13 +116,13 @@ class Home extends React.Component{
     const {queue} = this.props
     if (queue !== undefined & queue.length > 0){
       const track = queue[0]
-      this.playTrack(track.uri)
       let tracks = []
-      popTrack(this.props.playlistId).then(function(data){
-          tracks = data.data.popTrack.tracks
-      })
-      console.log(this.props)
-      // this.props.updateTracks(tracks)
+        popTrack(this.props.playlistId).then(function(data){
+            tracks = data.data.popTrack.tracks
+        })
+      this.props.updateTracks(tracks)
+      this.playTrack(track.uri)
+
       // this.setState({
       //   queue: tracks
       // })
@@ -120,8 +131,6 @@ class Home extends React.Component{
 
   playTrack(uri){
     const { deviceId, token } = this.props;
-    console.log(deviceId)
-    console.log(uri)
     fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
       method: "PUT",
       headers: {
@@ -131,12 +140,11 @@ class Home extends React.Component{
       body: JSON.stringify({
         "uris": [uri]
       }),
-    }).then(response => console.log(response))
+    })
     }
 
   checkForPlayer() {
     const { token } = this.props;
-    console.log(token)
     // console.log("Checking Player at " + this.getDate())
   
     if (window.Spotify !== null) {
@@ -153,7 +161,6 @@ class Home extends React.Component{
   }
 
   createEventHandlers() {
-    console.log(this.props)
     this.player.on('initialization_error', e => { console.error(e); });
     this.player.on('authentication_error', e => {
       console.error(e);
@@ -168,7 +175,6 @@ class Home extends React.Component{
     // Ready
     this.player.on('ready', async data => {
       let { device_id, user_id} = data;
-      console.log(device_id)
       console.log("Let the music play on!");
       // await this.setState({ deviceId: device_id, player: this.player });
       this.props.updatePlayer({
@@ -195,7 +201,6 @@ class Home extends React.Component{
         .join(", ");
       const trackURI = currentTrack.uri
       const playing = !state.paused;
-      console.log(state)
       this.setState({
         position,
         duration,
@@ -223,8 +228,6 @@ class Home extends React.Component{
    transferPlaybackHere() {
      console.log("Transferring playback")
     const { deviceId, token } = this.props;
-    console.log(deviceId)
-    console.log(token)
     fetch("https://api.spotify.com/v1/me/player", {
       method: "PUT",
       headers: {
@@ -240,7 +243,6 @@ class Home extends React.Component{
 
   searchURI = async searchQuery =>{
     const {token } = this.props;
-    console.log(searchQuery)
     const items = [];
     await fetch(`https://api.spotify.com/v1/search?q=${searchQuery}&type=track&limit=5`, {
       method: "GET",
@@ -275,7 +277,6 @@ class Home extends React.Component{
       },
     }).then(response => response.json())
     .then(function(data){
-        console.log(data.id)
         user_id = data.id
     })
     .catch(function (error){
@@ -291,7 +292,6 @@ class Home extends React.Component{
         let tracks = null
         await Promise.resolve(addToPlaylist(this.props.playlistId, songUri, this.props.token))
             .then((data) => {
-              console.log(data)
               tracks = data.data.insertTrack.tracks
         })  
         this.props.updateTracks({"queue": tracks})
@@ -304,7 +304,6 @@ class Home extends React.Component{
 
   createPlaylist = async () => {
     const {token, userId, roomNumber} = this.props;
-    console.log(token)
     let playlistURI = null
     let playlistId = null
     await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
@@ -319,7 +318,6 @@ class Home extends React.Component{
       }),
     }).then(response => response.json())
     .then(function(data){
-        console.log(data.uri)
         playlistURI = data.uri
         playlistId = data.id
     })
@@ -336,7 +334,7 @@ class Home extends React.Component{
 
     render(){
         return (
-            <div className="home-page">
+            <div className="home-page container">
                 <div className="row">
                     <h3> Room {this.props.roomNumber}</h3>
                 </div>
@@ -346,7 +344,10 @@ class Home extends React.Component{
                 <div className="row">
                   <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue} queue={this.props.queue}/>
                 </div>
-                <div className="row jukebox-player col-lg-12 col-12">
+                <div className="row">
+                  <Queue playTrack={this.playTrack} queue={this.props.queue} owner={this.props.owner}/>
+                </div>
+                <div className="row jukebox-player">
                   <div className="current-track-details">
                   {
                     (this.props.albumArt !== null) ?
@@ -383,10 +384,10 @@ class Home extends React.Component{
                         <span className="player-element">
                         <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
                         </span>
+                        <span>
+                        </span>
                   </div>
-                </div>
-                <div className="row">
-                  <Queue playTrack={this.playTrack} queue={this.props.queue} owner={this.props.owner}/>
+                  <TrackProgress/>
                 </div>
             </div>
         )

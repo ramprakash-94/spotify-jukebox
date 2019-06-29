@@ -26,21 +26,14 @@ const initialState = {
 function rootReducer (state = initialState, action){
     switch(action.type){
         case "UPDATE_PLAYER":
-            console.log("Updated Player")
-            console.log(action)
             return Object.assign({}, state, action)
         case "UPDATE_SEARCH_RESULTS":
             return Object.assign({}, state, action)
         case "UPDATE_USER":
-            console.log("Updated User")
-            console.log(action)
             return Object.assign({}, state, action)
         case "UPDATE_ROOM":
-            console.log("Updating Room")
             return Object.assign({}, state, action)
         case "UPDATE_TRACKS":
-            console.log("Track added")
-            console.log(action)
             return Object.assign({}, state, action)
         default:
             return state

@@ -13,9 +13,9 @@ class Queue extends React.Component{
         this.renderTrackInfoOwner = this.renderTrackInfoOwner.bind(this)
         this.renderTrackInfoGuest = this.renderTrackInfoGuest.bind(this)
     }
-    componentDidMount(){
-        console.log(this.props.queue)
-    }
+    // componentDidMount(){
+    //     console.log(this.props.queue)
+    // }
     renderQueue(){
         let results = <h4>No tracks in the queue</h4>;
         if (this.props.queue){
@@ -70,8 +70,6 @@ class Queue extends React.Component{
 
     render(){
         const {queue} = this.props
-        console.log(this.props)
-        console.log(queue)
         return(
             <div className="queue-container">
                 <div className="row">

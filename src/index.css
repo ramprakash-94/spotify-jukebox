@@ -77,6 +77,8 @@ code {
   color: white;
   margin-top: 50px;
   padding: 20px;
+  bottom: 0;
+  margin-bottom: 0px !important;
 }
 
 #search-results{
@@ -178,4 +180,25 @@ code {
 }
 .queue-container{
   margin: 20px;
+}
+.progress{
+  color: white;
+  background-image: none !important;
+  background-color: #ffa6a9 !important;
+  height: 5px;
+  width: 40%;
+  margin-top: 50px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.progress-bar{
+  background-color: #FAF0E6;
+}
+.progress-text{
+  color: white !important;
+}
+.track-progress{
+  margin-top: 50px;
+  margin-left: auto;
+  margin-right: auto;
 }

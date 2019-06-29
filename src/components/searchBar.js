@@ -35,7 +35,6 @@ class SearchBar extends React.Component{
 
   searchURI = async searchQuery =>{
     const token = this.props.token;
-    console.log(searchQuery)
     const items = [];
     await fetch(`https://api.spotify.com/v1/search?q=${searchQuery}&type=track&limit=5`, {
       method: "GET",
