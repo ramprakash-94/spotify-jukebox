@@ -20,7 +20,9 @@ const initialState = {
       queue: [],
       client_id: "91b73766037a44e7a855d5cf2b0c8768",
       redirect_uri: "localhost:3000",
-      currentTrack: null
+      currentTrack: null,
+      loading: false,
+      player: false
     };
 
 function rootReducer (state = initialState, action){
@@ -35,6 +37,8 @@ function rootReducer (state = initialState, action){
             return Object.assign({}, state, action)
         case "UPDATE_TRACKS":
             return Object.assign({}, state, action)
+        case "LOGOUT":
+            return Object.assign({}, initialState, action)
         default:
             return state
     }

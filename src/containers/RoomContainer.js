@@ -41,10 +41,10 @@ class RoomContainer extends React.Component{
     }
 
     componentDidMount(){
-        if(!this.loaded){
-            return
-        }
-        this.setState()
+        console.log('Room Mounted')
+        this.props.updateRoomInfo({
+            loading: false
+        })
     }
 
     async handleClick(userType){
@@ -113,48 +113,23 @@ class RoomContainer extends React.Component{
         }
         else{
             return (
-                <div className="home-container">
-                    {/* {this.props.loggedIn ?
-                    <Home/>
-                    :
-                    <Login/>
-                    } */}
-                    {
-                        click ?
-                        <div></div>
-                        :
-                        <div>
-                            <div className="create-room row">
-                                <button className="spotify-login-button" onClick={() => this.handleClick("owner")}>Create Room</button>
-                            </div>
-                            <div className="join-room row">
-                                <div className="row">
-                                    <input 
-                                        type="text"
-                                        id="join-room"
-                                        placeholder="Room Number"
-                                        ref={input => this.roomNumber = input}
-                                        />
-                                </div>
-                                <div className="row">
-                                    <button className="spotify-login-button" onClick={() => this.handleClick("guest")}>Join Room</button>
-                                </div>
-                            </div>
-
+                <div className="home-container container">
+                    <div className="create-room row">
+                        <button className="spotify-login-button" onClick={() => this.handleClick("owner")}>Create Room</button>
+                    </div>
+                    <div className="join-room row">
+                        <div className="row">
+                            <input 
+                                type="text"
+                                id="join-room"
+                                placeholder="Room Number"
+                                ref={input => this.roomNumber = input}
+                                />
                         </div>
-                            // {/* <Route
-                            //     path="/courses/:courseId/modules/:moduleId/lessons/:lessonId/topics/:topicId"
-                            //     component={CourseEditor}/> */}
-                    }
-                    {
-                            loading ?
-                            <div className="row loading">
-                                <FontAwesomeIcon icon={faSpinner} size="lg" spin/>
-                            </div>
-                            :
-                            <div>
-                            </div>
-                    }
+                        <div className="row">
+                            <button className="spotify-login-button" onClick={() => this.handleClick("guest")}>Join Room</button>
+                        </div>
+                    </div>
                 </div>
             )
         }

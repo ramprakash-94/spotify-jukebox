@@ -66,11 +66,9 @@ code {
 
 .current-track-details{
   margin-bottom: 20px;
+  display: inline-block;
 }
 
-.player-control{
-  margin-top: 20px;
-}
 
 .jukebox-player{
   background-color: #FF5A5F;
@@ -78,7 +76,17 @@ code {
   margin-top: 50px;
   padding: 20px;
   bottom: 0;
+  left: 0;
+  right: 0;
   margin-bottom: 0px !important;
+  position: fixed;
+}
+
+.phantom{
+  display: block;
+  padding: 20px;
+  height: 60px;
+  width: 100%;
 }
 
 #search-results{
@@ -94,7 +102,13 @@ code {
 }
 
 #track-name{
-  font-size: 20px;
+  font-size: 16px;
+}
+#artist-name{
+  font-size: 12px;
+}
+#album-name{
+  font-size: 10px;
 }
 
 .sign-in-input{
@@ -108,13 +122,14 @@ code {
 }
 
 .album-art{
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
 }
 
 .album-art-player{
-  width: 100px;
-  height: 100px;
+  max-width: 100px;
+  width: 100%;
+  height: auto;
 }
 
 .go-button{
@@ -187,9 +202,10 @@ code {
   background-color: #ffa6a9 !important;
   height: 5px;
   width: 40%;
-  margin-top: 50px;
+  margin-top: 20px;
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: 0px;
 }
 .progress-bar{
   background-color: #FAF0E6;
@@ -198,7 +214,24 @@ code {
   color: white !important;
 }
 .track-progress{
-  margin-top: 50px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.page-header{
+  border: 0px;
+}
+
+.logout-button{
+  background-color: #272C34;
+  border-style: solid;
+  border-radius: 2px;
+  border-color: white;
+}
+.logout-button:hover{
+  background-color: white;
+  color: #272C34;
+}
+.main{
+  margin-bottom: 240px;
 }

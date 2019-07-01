@@ -9,6 +9,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import RoomContainer from './RoomContainer';
 import url from '../config'
+import {withRouter} from 'react-router-dom';
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 
 const client = new ApolloClient({
 link: new HttpLink({ uri: url }),
@@ -16,9 +18,7 @@ cache: new InMemoryCache()
 })
 
 function mapStateToProps(state){
-  return {
-    loggedIn: state.loggedIn
-  }
+  return state
 }
 
 function mapDispatchToProps(dispatch) {
@@ -33,7 +33,7 @@ const updateUserInfo = (state) => (Object.assign({}, state, {
             "token": state.token
 }))
 
-class HomeContainer extends React.Component{
+class LoginContainer extends React.Component{
     constructor(props){
         super(props)
         this.state = {
@@ -47,6 +47,7 @@ class HomeContainer extends React.Component{
             this.code = querystring.parse(document.location.search)['?code'];
             console.log(this.code)
             this.signInWithToken(this.code.toString())
+            this.props.history.push('/')
         }
 
         this.spotifyAuth = this.spotifyAuth.bind(this)
@@ -85,7 +86,8 @@ class HomeContainer extends React.Component{
         const data = {
             "userId": user.data.spotifyAuth.id,
             "email": user.data.spotifyAuth.email,
-            "token": user.data.spotifyAuth.token
+            "token": user.data.spotifyAuth.token,
+            "loading": true
         }
         this.props.updateUserInfo(data)
     }
@@ -93,9 +95,7 @@ class HomeContainer extends React.Component{
     spotifyAuth(event){
         const {client_id, redirect_uri} = this.state
         const encoded_redirect = encodeURIComponent(redirect_uri)
-        console.log(encoded_redirect)
         let uri = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encoded_redirect}&scope=${encodeURIComponent("playlist-modify-public user-read-email streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-private user-read-birthdate")}`
-        console.log(uri)
         event.preventDefault()
         window.location = uri
         this.setState({
@@ -104,33 +104,23 @@ class HomeContainer extends React.Component{
     }
 
     render(){
-        const {loading, loggedIn} = this.state
+        const {loading, loggedIn} = this.props
         return (
-            <div className="home-container">
-                {
-                    loggedIn ?
-                    <RoomContainer/>
-                    :
-                    <div className="login-component">
-                        <div className="row">
-                            <button className="spotify-login-button" onClick={this.spotifyAuth}>Sign in with Spotify </button>
-                        </div>
-                        {/* <Provider store={store}>
-                        <HomeContainer/>
-                        </Provider> */}
-                        <div className="row loading">
-                            {loading ?
-                            <FontAwesomeIcon icon={faSpinner} size="lg" spin/>
-                                :
-                            <div> </div>
-                            }
-                        </div>
-                    </div>
-                }
+            <div className="login-container container">
+                <div className="row">
+                    <button className="spotify-login-button" onClick={this.spotifyAuth}>Sign in with Spotify </button>
+                </div>
+                <div className="row loading">
+                    {loading ?
+                    <FontAwesomeIcon icon={faSpinner} size="lg" spin/>
+                        :
+                    <div> </div>
+                    }
+                </div>
             </div>
 
         )
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(HomeContainer)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(LoginContainer))

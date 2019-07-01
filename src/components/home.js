@@ -3,13 +3,9 @@ import {connect} from 'react-redux'
 import SearchBar from './searchBar';
 import SearchResults from './searchResults';
 import Queue from './queue'
-import { ApolloClient } from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
-import { InMemoryCache } from 'apollo-cache-inmemory'
-import {popTrack, getAllTracks, handleJoinRoom} from '../actions/rootActions'
-import gql from 'graphql-tag'
+import {popTrack, getAllTracks} from '../actions/rootActions'
 import {addToPlaylist, updateRoom} from '../actions/serverActions'
-import TrackProgress from './progressBar'
+import Player from './player'
 
 function mapStateToProps(state){
     return state
@@ -100,11 +96,11 @@ class Home extends React.Component{
         // })
     }
   onPrevClick() {
-    this.player.previousTrack();
+    this.props.player.previousTrack();
   }
   
   onPlayClick() {
-    this.player.togglePlay();
+    this.props.player.togglePlay();
   }
   
   onNextClick() {
@@ -148,38 +144,42 @@ class Home extends React.Component{
     // console.log("Checking Player at " + this.getDate())
   
     if (window.Spotify !== null) {
-      this.player = new window.Spotify.Player({
+      let player = new window.Spotify.Player({
         name: "Spotify Jukebox",
         getOAuthToken: cb => { cb(token); },
       });
+      this.props.updatePlayer({
+        player: player
+      })
       this.createEventHandlers();
   
       clearInterval(this.playerCheckInterval);
       // finally, connect!
-      this.player.connect();
+      player.connect();
     }
   }
 
   createEventHandlers() {
-    this.player.on('initialization_error', e => { console.error(e); });
-    this.player.on('authentication_error', e => {
+    const {player} = this.props
+    player.on('initialization_error', e => { console.error(e); });
+    player.on('authentication_error', e => {
       console.error(e);
       this.setState({ loggedIn: false });
     });
-    this.player.on('account_error', e => { console.error(e); });
-    this.player.on('playback_error', e => { console.error(e); });
+    player.on('account_error', e => { console.error(e); });
+    player.on('playback_error', e => { console.error(e); });
   
     // Playback status updates
-    this.player.on('player_state_changed', state => this.onStateChanged(state));
+    player.on('player_state_changed', state => this.onStateChanged(state));
   
     // Ready
-    this.player.on('ready', async data => {
+    player.on('ready', async data => {
       let { device_id, user_id} = data;
       console.log("Let the music play on!");
       // await this.setState({ deviceId: device_id, player: this.player });
       this.props.updatePlayer({
         "deviceId": device_id,
-        "player": this.player
+        "player": player
       })
       this.transferPlaybackHere();
       // this.playPlaylist("spotify:playlist:3c16xCB2ulN8s9VS3zCqck")
@@ -334,60 +334,27 @@ class Home extends React.Component{
 
     render(){
         return (
-            <div className="home-page container">
-                <div className="row">
-                    <h3> Room {this.props.roomNumber}</h3>
-                </div>
-                <div className="row">
-                    <SearchBar token={this.props.token}/>
-                </div>
-                <div className="row">
-                  <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue} queue={this.props.queue}/>
-                </div>
-                <div className="row">
-                  <Queue playTrack={this.playTrack} queue={this.props.queue} owner={this.props.owner}/>
-                </div>
-                <div className="row jukebox-player">
-                  <div className="current-track-details">
-                  {
-                    (this.props.albumArt !== null) ?
-                    <span>
-                        <img className="album-art-player" src={this.props.albumArt} alt="Album Art"></img>
-                    </span>
-                    :
-                    <span className="col-xs-4 col-lg-4 album-art">
-                    </span>
-                  }
-                  <span>
-                    <div className="row">
-                      <p id="track-name">{this.props.trackName}</p>
-                    </div>
-                    <div className="row">
-                      <p id="artist-name">{this.props.artistName}</p>
-                    </div>
-                    <div className="row">
-                      <p id="album-name">{this.props.albumName}</p>
-                    </div>
-                  </span>
+            <div className="home-page">
+                <div className="row main">
+                  <div className="row">
+                      <h3> Room {this.props.roomNumber}</h3>
                   </div>
-                  <div className="row player-control">
-                        <span className="player-element">
-                        <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
-                        </span>
-                        <span className="player-element">
-                        {this.props.playing ?
-                        <i className="fas fa-pause fa-2x control-button" onClick={() => this.onPlayClick()}></i>
-                        :
-                        <i className="fas fa-play fa-2x control-button" onClick={() => this.onPlayClick()}></i>
-                        }
-                        </span>
-                        <span className="player-element">
-                        <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
-                        </span>
-                        <span>
-                        </span>
+                  <div className="row search-queue">
+                    <div className="search col-6 col-lg-6">
+                      <div className="row">
+                        <SearchBar token={this.props.token}/>
+                      </div>
+                      <div className="row">
+                        <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue} queue={this.props.queue}/>
+                      </div>
+                    </div>
+                    <div className="queue col-6 col-lg-6">
+                      <Queue playTrack={this.playTrack} queue={this.props.queue} owner={this.props.owner}/>
+                    </div>
                   </div>
-                  <TrackProgress/>
+                </div>
+                <div className="row">
+                  <Player/>
                 </div>
             </div>
         )

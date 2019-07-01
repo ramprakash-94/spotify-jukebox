@@ -39,7 +39,7 @@ class SearchResults extends React.Component{
                 </div>
                 {
                     (this.props.queue.filter(item => item.uri === track.uri).length > 0) ?
-                    <div classname="col-xs-2 col-lg-2">
+                    <div className="col-xs-2 col-lg-2">
                         <FontAwesomeIcon icon={faCheck} className="added-track"/>
                     </div>
                     :
@@ -48,7 +48,7 @@ class SearchResults extends React.Component{
                         (this.state.loading === track.uri) ?
                             <FontAwesomeIcon icon={faSpinner} size="lg" spin/>
                         :
-                        <div classname="col-xs-2 col-lg-2" onClick={() => this.addTrack(track.uri)}>
+                        <div className="col-xs-2 col-lg-2" onClick={() => this.addTrack(track.uri)}>
                             <FontAwesomeIcon icon={faPlus} className="add-track"/>
                         </div>
                         
