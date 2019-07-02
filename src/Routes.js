@@ -1,6 +1,8 @@
 import React from 'react'
 import { Route, Switch, Redirect } from 'react-router-dom'
 import RoomContainer from './containers/RoomContainer';
+import Home from './components/home'
+import FullScreenPlayer from './containers/FullScreenPlayer';
 
 export const Routes = () => {
     return (
@@ -10,6 +12,8 @@ export const Routes = () => {
                     <Redirect to="/room"/>
                 </Route>
                 <Route exact path="/room" component={RoomContainer} />
+                <Route exact path="/room/:rid" component={Home} />
+                {/* <Route exact path="/tv" component={FullScreenPlayer}/> */}
             </Switch>
         </div>
     )

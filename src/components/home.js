@@ -4,8 +4,9 @@ import SearchBar from './searchBar';
 import SearchResults from './searchResults';
 import Queue from './queue'
 import {popTrack, getAllTracks} from '../actions/rootActions'
-import {addToPlaylist, updateRoom} from '../actions/serverActions'
+import {addToPlaylist, updateRoom, handleJoinRoom} from '../actions/serverActions'
 import Player from './player'
+import {getTrackInformation} from '../actions/rootActions'
 
 function mapStateToProps(state){
     return state
@@ -36,9 +37,15 @@ class Home extends React.Component{
         this.playTrack = this.playTrack.bind(this)
         this.changeTrack = true
     }
+    componentWillMount(){
+      this.getRoomDetails()
+    }
 
     componentDidMount(){
       this.handleEntryPoint()
+    }
+    componentWillUnmount(){
+      clearInterval(this.updateStateTimeout)
     }
 
     componentDidUpdate(){
@@ -48,7 +55,7 @@ class Home extends React.Component{
         this.changeTrack = false
       }
 
-      if (currentTrack === trackURI | this.props.roomNumber === null){
+      if (currentTrack === trackURI | this.props.roomNumber === null | !trackURI){
         return
       }
 
@@ -68,10 +75,71 @@ class Home extends React.Component{
       })
     }
 
+    getRoomDetails = async() => {
+        const roomNumber = this.props.match.params.rid
+        Promise.resolve(handleJoinRoom(roomNumber))
+            .then((data) => {
+                console.log(data)
+                const room = data.data.room
+                let owner = false
+                if(this.props.userId === room.admin){
+                  owner = true
+                }
+                if (!owner){
+                  Promise.resolve(getTrackInformation(room.currentTrack, this.props.token)).then((trackData) =>{
+                    Promise.resolve(
+                      this.props.updatePlayer({
+                          roomId: room.id,
+                          roomNumber: room.number,
+                          admin: room.admin,
+                          playlistId: room.playlists[0].id,
+                          currentTrack: room.currentTrack,
+                          trackName: trackData.trackName,
+                          artistName: trackData.artistName,
+                          albumName: trackData.albumName,
+                          albumArt: trackData.albumArt,
+                          owner: owner,
+                          player: true
+                      })
+                    ).then(() => {
+                      Promise.resolve(getAllTracks(this.props.playlistId))
+                        .then((data) => {
+                          let tracks = data.data.allTracksInPlaylist.tracks
+                          Promise.resolve(this.props.updateTracks({
+                            queue: tracks
+                          }))
+                        })
+                    })
+                  })
+
+                }
+                else{
+                  Promise.resolve(
+                    this.props.updatePlayer({
+                        roomId: room.id,
+                        roomNumber: room.number,
+                        admin: room.admin,
+                        playlistId: room.playlists[0].id,
+                        currentTrack: room.currentTrack,
+                        owner: owner,
+                        player: true
+                    })
+                  ).then(() => {
+                    this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000);
+                    Promise.resolve(getAllTracks(this.props.playlistId))
+                      .then((data) => {
+                        let tracks = data.data.allTracksInPlaylist.tracks
+                        Promise.resolve(this.props.updateTracks({
+                          queue: tracks
+                        }))
+                      })
+                  })
+                }
+        })
+    }
+
     handleEntryPoint = async() => {
-        if (this.props.owner === true){
-          this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000);
-        }
+        console.log(this.props)
         let currentTrack = null
         let tracks = null
         this.updateStateTimeout = setInterval(() => {
@@ -81,7 +149,7 @@ class Home extends React.Component{
             if (tracks !== null){
               this.updateTracks(tracks)
             }
-          }, 5000)
+          }, 10000)
 
         const {position, duration, playing} = this.props
         let newPos = null
@@ -113,12 +181,14 @@ class Home extends React.Component{
     if (queue !== undefined & queue.length > 0){
       const track = queue[0]
       let tracks = []
-        popTrack(this.props.playlistId).then(function(data){
+      Promise.resolve(popTrack(this.props.playlistId))
+          .then(function(data){
             tracks = data.data.popTrack.tracks
+            console.log(tracks)
+            Promise.resolve(this.props.updateTracks(tracks)).then(() =>
+              this.playTrack(track.uri)
+            )
         })
-      this.props.updateTracks(tracks)
-      this.playTrack(track.uri)
-
       // this.setState({
       //   queue: tracks
       // })
@@ -290,11 +360,11 @@ class Home extends React.Component{
 
   addToQueue = async(songUri) => {
         let tracks = null
-        await Promise.resolve(addToPlaylist(this.props.playlistId, songUri, this.props.token))
+        Promise.resolve(addToPlaylist(this.props.playlistId, songUri, this.props.token))
             .then((data) => {
               tracks = data.data.insertTrack.tracks
+              this.props.updateTracks({"queue": tracks})
         })  
-        this.props.updateTracks({"queue": tracks})
         // this.setState({
         //   queue: tracks
         // })

@@ -75,6 +75,7 @@ code {
   color: white;
   margin-top: 50px;
   padding: 20px;
+  padding-bottom: 0px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -102,10 +103,10 @@ code {
 }
 
 #track-name{
-  font-size: 16px;
+  font-size: 12px;
 }
 #artist-name{
-  font-size: 12px;
+  font-size: 10px;
 }
 #album-name{
   font-size: 10px;
@@ -127,7 +128,7 @@ code {
 }
 
 .album-art-player{
-  max-width: 100px;
+  max-width: 70px;
   width: 100%;
   height: auto;
 }
@@ -169,7 +170,7 @@ code {
 }
 
 .track-name{
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .track-artist{
@@ -201,7 +202,7 @@ code {
   background-image: none !important;
   background-color: #ffa6a9 !important;
   height: 5px;
-  width: 40%;
+  width: 100%;
   margin-top: 20px;
   margin-left: auto;
   margin-right: auto;
@@ -227,6 +228,7 @@ code {
   border-style: solid;
   border-radius: 2px;
   border-color: white;
+  margin-left: 20px !important;
 }
 .logout-button:hover{
   background-color: white;
@@ -243,4 +245,78 @@ code {
 }
 .room-item{
   border-bottom: white solid 2px;
+  font-size: 16px;
+  margin: 0px;
+  padding: 10px;
+}
+.room-item:hover{
+  background-color: white;
+  color: black;
+}
+.error{
+  margin: 10px;
+  color: white;
+}
+.home-container{
+  margin-bottom: 30px;
+}
+.player-control{
+  padding-left: 200px;
+  padding-top: 20px;
+}
+
+/* Full Screen Stuff */
+
+.full-screen-player{
+  /* background-color: rgba(255, 90, 95, 0.8); */
+  background-color: #FF5A5F;
+  color: white;
+  margin: 0px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  position: absolute;
+}
+
+.fullscreen-body{
+  margin: 50px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -200px 0 0 -120px;
+}
+.fullscren-track-details{
+  margin: 20px;
+}
+.fullscreen-player-controls{
+  margin: 20px;
+}
+.fullscreeen-album-art{
+  width: 200px;
+  height: 200px;
+}
+
+.fullscreen-track-name{
+  font-size: 20px;
+  padding: 10px;
+}
+.fullscreen-album-name{
+  font-size: 14px;
+  padding: 5px;
+}
+
+.fullscreen-artist-name{
+  font-size: 16px;
+  padding: 5px;
+}
+.fullscreen-player-control{
+  padding: 20px;
+}
+.close-fullscreen{
+  padding: 20px;
+}
+.open-fullscreen{
+  margin-top: 0px;
+  padding-bottom: 10px;
 }

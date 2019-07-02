@@ -23,7 +23,9 @@ const initialState = {
       currentTrack: null,
       loading: false,
       player: null,
-      rooms: []
+      rooms: [],
+      createRoomError: false,
+      fullscreen: false
     };
 
 function rootReducer (state = initialState, action){
@@ -42,6 +44,8 @@ function rootReducer (state = initialState, action){
             return Object.assign({}, state, action)
         case "LOGOUT":
             return Object.assign({}, initialState, action)
+        case "LEAVE_ROOM":
+            return Object.assign({}, state, action)
         default:
             return state
     }

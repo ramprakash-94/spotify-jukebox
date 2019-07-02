@@ -67,26 +67,35 @@ class RoomContainer extends React.Component{
                 owner: false
             })
         }
-        
-
-
     }
     async createRoomClick(){
         Promise.resolve(handleCreateRoom(this.props.userId))
             .then((data) => {
                 console.log("Room Created")
                 console.log(data)
-                const room = data.data.createRoom
-                this.props.updateRoomInfo({
-                    roomId: room.id,
-                    roomNumber: room.number,
-                    playlistId: room.playlists[0].id,
-                    tracks: room.playlists[0].tracks,
-                    playing: room.playing,
-                    duration: room.duration,
-                    position: room.position,
-                    currentTrack: room.currentTrack
-                })
+                if (data.errors){
+                    this.props.updateRoomInfo({
+                        createRoomError: true
+                    })
+                }
+                else{
+                    const rooms = data.data.createRoom
+                    // this.props.updateRoomInfo({
+                    //     roomId: room.id,
+                    //     roomNumber: room.number,
+                    //     playlistId: room.playlists[0].id,
+                    //     tracks: room.playlists[0].tracks,
+                    //     playing: room.playing,
+                    //     duration: room.duration,
+                    //     position: room.position,
+                    //     currentTrack: room.currentTrack
+                    // })
+                    this.props.updateRoomInfo({
+                        rooms: rooms,
+                        createRoomError: false
+                    })
+
+                }
         })        
     }
 
@@ -104,22 +113,27 @@ class RoomContainer extends React.Component{
         })
     }
 
+    goToRoom(){
+        const num = this.roomNumber.value
+        this.props.history.push(`/room/${num}`)
+    }
+
     render(){
         const {click, loading, loaded, owner} = this.state
-        if (loaded & owner){
-            return <Home owner={owner}/>
-        }
-        else if (loaded & !owner){
-            return <GuestHome owner={owner}/>
-        }
-        else{
-            return (
-                <div className="home-container container">
-                    <div className="row create-room">
+        // if (loaded & owner){
+        //     return <Home owner={owner}/>
+        // }
+        // if (loaded & !owner){
+        //     return <GuestHome owner={owner}/>
+        // }
+        return (
+            <div className="home-container">
+                <div className="row">
+                    <div className="col-lg-6 create-room">
                         <button className="spotify-login-button" onClick={() => this.handleClick("owner")}>Create Room</button>
                         <RoomList/>
                     </div>
-                    <div className="join-room row">
+                    <div className="col-lg-6 join-room">
                         <div className="row">
                             <input 
                                 type="text"
@@ -129,12 +143,12 @@ class RoomContainer extends React.Component{
                                 />
                         </div>
                         <div className="row">
-                            <button className="spotify-login-button" onClick={() => this.handleClick("guest")}>Join Room</button>
+                            <button className="spotify-login-button" onClick={() => this.goToRoom()}>Join Room</button>
                         </div>
                     </div>
                 </div>
-            )
-        }
+            </div>
+        )
     }
 }
 

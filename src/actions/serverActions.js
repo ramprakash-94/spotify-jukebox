@@ -52,22 +52,16 @@ export async function handleCreateRoom (userId){
     console.log("Creating Room for user: " + userId)
     return client.mutate({
       variables: { userId: userId},
+      errorPolicy: 'all',
       mutation: gql`
           mutation CreateRoom($userId: ID!){
             createRoom(userId: $userId){
               id
               number
-              playlists{
-                id
-                tracks {
-                  id
-                }
-              }
             }
           }
       `,
     })
-    .catch(error => console.error(error))
   }
 
 export async function handleJoinRoom (roomNumber){
@@ -76,23 +70,19 @@ export async function handleJoinRoom (roomNumber){
       cache: new InMemoryCache()
     })
     return client.query({
+      errorPolicy: 'all',
       query: gql` 
       { 
         room(num: ${roomNumber}){ 
           id 
           number
-          currentTrack{
-            id
-            artist
-            uri
-            album
-            title
-          }
+          admin
+          currentTrack
           playlists{
             id
           }
-          }
         }
+      }
       `,
     }).catch(error => console.error(error));
   }

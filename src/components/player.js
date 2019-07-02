@@ -2,9 +2,10 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {popTrack} from '../actions/rootActions'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faSpinner, faAngleUp} from '@fortawesome/free-solid-svg-icons'
 
 import TrackProgress from './progressBar'
+import FullScreenPlayer from '../containers/FullScreenPlayer';
 
 function mapStateToProps(state){
     return state
@@ -28,6 +29,8 @@ const updatePlayer = (state) => (Object.assign({}, state, {
 class Player extends React.Component{
     constructor(props){
         super(props)
+        this.playNextTrack = this.playNextTrack.bind(this)
+        this.fullScreenPlayer = this.fullScreenPlayer.bind(this)
     }
     onPrevClick() {
         this.props.player.previousTrack();
@@ -47,12 +50,14 @@ class Player extends React.Component{
         if (queue !== undefined & queue.length > 0){
         const track = queue[0]
         let tracks = []
-            popTrack(this.props.playlistId).then(function(data){
+        Promise.resolve(popTrack(this.props.playlistId))
+            .then((data) => {
                 tracks = data.data.popTrack.tracks
+                console.log(tracks)
+                Promise.resolve(this.props.updateTracks(tracks)).then(() =>
+                this.playTrack(track.uri)
+                )
             })
-        this.props.updateTracks(tracks)
-        this.playTrack(track.uri)
-
         // this.setState({
         //   queue: tracks
         // })
@@ -73,57 +78,83 @@ class Player extends React.Component{
         })
     }
 
+    fullScreenPlayer(){
+        this.props.updatePlayer({
+            fullscreen: true
+        })
+    }
+
     render(){
         return(
             <div className="player">
                 {
                   this.props.player ?
                   <div className="row jukebox-player">
-                    <div className="current-track-details row">
+                    <div className="row open-fullscreen" onClick={this.fullScreenPlayer}>
+                        <FontAwesomeIcon icon={faAngleUp} size="2x"/>
+                    </div>
+                    <div className="row main-player">
+                        <div className="current-track-details row">
+                            {
+                            (this.props.albumArt !== null) ?
+                            <div className="col-xs-2 col-lg-2">
+                                <img className="img-responsive album-art-player" src={this.props.albumArt} alt="Album Art"></img>
+                            </div>
+                            :
+                            <div className="col-xs-2 col-lg-2 album-art-player">
+                            </div>
+                            }
+                            <div className="col-xs-4 col-lg-4">
+                                <div className="row track-name">
+                                    {this.props.trackName}
+                                </div>
+                                <div className="row artist-name">
+                                    {this.props.artistName}
+                                </div>
+                                {/* <div className="row album-name">
+                                    {this.props.albumName}
+                                </div> */}
+                            </div>
                         {
-                        (this.props.albumArt !== null) ?
-                        <div className="col-xs-4 col-lg-4 album-art-player">
-                            <img className="img-responsive album-art-player" src={this.props.albumArt} alt="Album Art"></img>
-                        </div>
-                        :
-                        <div className="col-xs-4 col-lg-4 album-art-player">
-                        </div>
+                            this.props.owner ?
+                            <div className="col-xs-6 col-lg-6 player-control">
+                                <div className="row">
+                                    <span className="player-element">
+                                    <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
+                                    </span>
+                                    <span className="player-element">
+                                    {this.props.playing ?
+                                    <i className="fas fa-pause fa-2x control-button" onClick={() => this.onPlayClick()}></i>
+                                    :
+                                    <i className="fas fa-play fa-2x control-button" onClick={() => this.onPlayClick()}></i>
+                                    }
+                                    </span>
+                                    <span className="player-element">
+                                    <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
+                                    </span>
+                                    <span>
+                                    </span>
+                                </div>
+                                <TrackProgress/>
+                            </div>
+                            :
+                            <div>
+                            </div>
                         }
-                        <div className="col-xs-8 col-lg-8">
-                            <div className="row track-name">
-                                {this.props.trackName}
-                            </div>
-                            <div className="row artist-name">
-                                {this.props.artistName}
-                            </div>
-                            <div className="row album-name">
-                                {this.props.albumName}
-                            </div>
                         </div>
                     </div>
-                    <div className="row player-control">
-                          <span className="player-element">
-                          <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
-                          </span>
-                          <span className="player-element">
-                          {this.props.playing ?
-                          <i className="fas fa-pause fa-2x control-button" onClick={() => this.onPlayClick()}></i>
-                          :
-                          <i className="fas fa-play fa-2x control-button" onClick={() => this.onPlayClick()}></i>
-                          }
-                          </span>
-                          <span className="player-element">
-                          <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
-                          </span>
-                          <span>
-                          </span>
-                    </div>
-                    <TrackProgress/>
                   </div>
                   :
                   <div>
                     <FontAwesomeIcon icon={faSpinner} size="lg" spin/>
                   </div>
+                }
+                {
+                    this.props.fullscreen ?
+                    <FullScreenPlayer/>
+                    :
+                    <div>
+                    </div>
                 }
             </div>
         )
