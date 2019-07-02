@@ -8,6 +8,7 @@ import { Redirect } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import GuestHome from '../components/guestHome'
+import RoomList from '../components/roomList';
 
 function mapStateToProps(state){
   return {
@@ -114,8 +115,9 @@ class RoomContainer extends React.Component{
         else{
             return (
                 <div className="home-container container">
-                    <div className="create-room row">
+                    <div className="row create-room">
                         <button className="spotify-login-button" onClick={() => this.handleClick("owner")}>Create Room</button>
+                        <RoomList/>
                     </div>
                     <div className="join-room row">
                         <div className="row">

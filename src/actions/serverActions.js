@@ -71,7 +71,6 @@ export async function handleCreateRoom (userId){
   }
 
 export async function handleJoinRoom (roomNumber){
-    console.log(roomNumber)
     const client = new ApolloClient({
       link: new HttpLink({ uri: url}),
       cache: new InMemoryCache()
@@ -95,5 +94,22 @@ export async function handleJoinRoom (roomNumber){
           }
         }
       `,
+    }).catch(error => console.error(error));
+  }
+
+export async function getRooms(userId){
+    const client = new ApolloClient({
+      link: new HttpLink({ uri: url}),
+      cache: new InMemoryCache()
+    })
+    const query = gql`query Rooms($id: String!){
+          rooms(id: $id){ 
+            id
+            number
+          }
+        }`
+    return client.query({
+      variables: { id: userId},
+      query: query
     }).catch(error => console.error(error));
   }

@@ -160,7 +160,7 @@ code {
   font-size: 20px;
   color: #272C34;
   text-align: center;
-  width: 150px;
+  width: 180px;
 }
 
 .art{
@@ -234,4 +234,13 @@ code {
 }
 .main{
   margin-bottom: 240px;
+}
+.room-list{
+  margin: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80px;
+}
+.room-item{
+  border-bottom: white solid 2px;
 }

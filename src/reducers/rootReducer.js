@@ -22,7 +22,8 @@ const initialState = {
       redirect_uri: "localhost:3000",
       currentTrack: null,
       loading: false,
-      player: false
+      player: null,
+      rooms: []
     };
 
 function rootReducer (state = initialState, action){
@@ -36,6 +37,8 @@ function rootReducer (state = initialState, action){
         case "UPDATE_ROOM":
             return Object.assign({}, state, action)
         case "UPDATE_TRACKS":
+            return Object.assign({}, state, action)
+        case "UPDATE_ROOMS":
             return Object.assign({}, state, action)
         case "LOGOUT":
             return Object.assign({}, initialState, action)
