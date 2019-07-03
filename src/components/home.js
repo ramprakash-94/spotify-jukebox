@@ -37,6 +37,7 @@ class Home extends React.Component{
         this.playTrack = this.playTrack.bind(this)
         this.changeTrack = true
         this.intervalGetTracks = this.intervalGetTracks.bind(this)
+        this.playNextTrack = this.playNextTrack.bind(this)
     }
     componentWillMount(){
       this.getRoomDetails()
@@ -184,7 +185,7 @@ class Home extends React.Component{
       const track = queue[0]
       let tracks = []
       Promise.resolve(popTrack(this.props.playlistId))
-          .then(function(data){
+          .then((data) => {
             tracks = data.data.popTrack.tracks
             console.log(tracks)
             Promise.resolve(this.props.updateTracks({
