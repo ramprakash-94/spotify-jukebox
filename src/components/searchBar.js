@@ -23,6 +23,9 @@ class SearchBar extends React.Component{
         this.clearSearchInput = this.clearSearchInput.bind(this)
         this.searchURI = this.searchURI.bind(this)
     }
+    componentDidMount(){
+      this.search.focus()
+    }
 
     handleSearchInputChange(){
         this.searchURI(this.search.value);

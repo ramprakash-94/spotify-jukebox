@@ -17,10 +17,13 @@
     "react-burger-menu": "^2.6.10",
     "react-dom": "^16.8.6",
     "react-https-redirect": "^1.1.0",
+    "react-modal": "^3.8.2",
+    "react-popup": "^0.10.0",
     "react-redux": "^7.0.3",
     "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
     "react-select-search": "^0.9.6",
+    "react-sidebar": "^3.0.2",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0"
   },

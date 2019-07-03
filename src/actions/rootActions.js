@@ -39,7 +39,6 @@ const client = new ApolloClient({
 // }
 
   export async function handleCreateUser(spotifyToken){
-    console.log(spotifyToken)
     let userId = null
     await client.mutate({
       variables: { token: spotifyToken, type: "owner"},
@@ -65,12 +64,13 @@ const client = new ApolloClient({
 
 
   export async function popTrack (playlistId){
-    console.log(playlistId)
     return client.mutate({
       variables: { playlistId: playlistId},
       mutation: gql`
           mutation PopTrack($playlistId: ID!){
             popTrack(playlistId: $playlistId){
+              id
+              nowPlaying
               tracks {
                 id
                 title
@@ -87,7 +87,6 @@ const client = new ApolloClient({
 
   export async function getAllTracks (playlistId){
     let id = playlistId
-    console.log(id)
     const client = new ApolloClient({
       link: new HttpLink({ uri: url}),
       cache: new InMemoryCache()

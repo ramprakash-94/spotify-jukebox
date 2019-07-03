@@ -39,9 +39,8 @@ code {
   width: 300px;
   margin: auto;
   text-align: center;
-  background-color: #272C34;
+  background-color: #171a1f;
   color: white;
-  border: 2px solid #ccc;
 }
 
 .search-result:hover{
@@ -50,13 +49,14 @@ code {
 }
 
 .queue-result{
-  padding: 20px 0px 20px 0px;
-  margin: auto;
-  width: 400px;
+  padding: 20px;
+  margin: 5px;
   font-size: 16px;
-  background-color: #272C34;
+  width: 170px;
+  height: 170px;
+  background-color: #171a1f;
   color: white;
-  border: 2px solid #ccc;
+  word-wrap: break-word;
 }
 
 .queue-result:hover{
@@ -90,8 +90,8 @@ code {
   width: 100%;
 }
 
-#search-results{
-  padding-top: 20px;
+.search-results{
+  padding: 20px;
 }
 
 .player-element{
@@ -179,6 +179,7 @@ code {
 
 .queue-container{
   margin-top: 40px;
+  margin-bottom: 0px;
 }
 
 .added-track{
@@ -221,6 +222,7 @@ code {
 
 .page-header{
   border: 0px;
+  margin-top:5px;
 }
 
 .logout-button{
@@ -263,6 +265,18 @@ code {
 .player-control{
   margin-left: 200px;
   padding-top: 10px;
+}
+
+/* Popup Search */
+.search-container{
+  background-color: #171a1f;
+  color: white;
+  margin: 0px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  position: absolute;
 }
 
 /* Full Screen Stuff */
@@ -322,4 +336,27 @@ code {
 }
 .btn-group{
   margin-right: 40px;
+} 
+.scrolling-wrapper{
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-left: 20px;
+}
+.card {
+  flex: 0 0 auto;
+}
+.queue-track-title{
+  margin-top: 5px;
+  word-wrap: break-word;
+  font-size: 12px;
+}
+.queue-album-art{
+  margin-top: 0px;
+}
+.queue-artist-title{
+  color: gray;
+}
+.queue-title{
+  margin-left: 50px;
 }

@@ -40,13 +40,15 @@ class Queue extends React.Component{
     const artist = track.artist
     const albumArt = track.albumArt
     return (
-    <div className="queue-result row" onClick={() => this.props.playTrack(track.uri)} key={track.uri}>
-        <div className="col-xs-4 col-lg-4">
+    <div className="queue-result card" onClick={() => this.props.playTrack(track.uri)} key={track.uri}>
+        <div className="row queue-album-art">
             <img className="album-art" src={albumArt} alt="Album Art"></img>
         </div>
-        <div className="col-xs-8 col-lg-8">
-            <div className="row track-title">{title}</div>
-            <div className="row track-artist">{artist}</div>
+        <div className="row queue-track-title">
+            <div className="col-12 col-lg-12 track-title">{title}</div>
+        </div>
+        <div className="row queue-artist-title">
+            <div className=" track-artist">{artist}</div>
         </div>
     </div> ) 
     }
@@ -57,33 +59,36 @@ class Queue extends React.Component{
     const artist = track.artist
     const albumArt = track.albumArt
     return (
-    <div className="queue-result row" key={track.uri}>
-        <div className="col-xs-4 col-lg-4">
+    <div className="queue-result card" key={track.uri}>
+        <div className="row queue-album-art">
             <img className="album-art" src={albumArt} alt="Album Art"></img>
         </div>
-        <div className="col-xs-8 col-lg-8">
-            <div className="row track-title">{title}</div>
-            <div className="row track-artist">{artist}</div>
+        <div className="row queue-track-title">
+            <div className="col-12 col-lg-12 track-title">{title}</div>
+        </div>
+        <div className="row queue-artist-title">
+            <div className=" track-artist">{artist}</div>
         </div>
     </div> ) 
     }
 
     render(){
-        const {queue} = this.props
+        const {queue, nowPlaying} = this.props
+        const upNext = queue.filter((item, index) => index > nowPlaying)
         return(
             <div className="queue-container">
                 <div className="row">
-                    <div className="col-3">
-                        <h3>Queue</h3>
+                    <div className="col-3 pull-left queue-title">
+                        <h3>Up Next</h3>
                     </div>
                 </div>
                 {this.props.owner ?
-                <div className="queue row">
-                    {queue.map(i => this.renderTrackInfoOwner(i))}
+                <div className="queue scrolling-wrapper">
+                    {upNext.map(i => this.renderTrackInfoOwner(i))}
                 </div>
                 :
-                <div className="queue row">
-                    {queue.map(i => this.renderTrackInfoGuest(i))}
+                <div className="queue scrolling-wrapper">
+                    {upNext.map(i => this.renderTrackInfoGuest(i))}
                 </div>
                 }
             </div>

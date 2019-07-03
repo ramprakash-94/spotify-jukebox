@@ -1,13 +1,16 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import SearchBar from './searchBar';
-import SearchResults from './searchResults';
 import Queue from './queue'
 import {popTrack, getAllTracks} from '../actions/rootActions'
 import {addToPlaylist, updateRoom, handleJoinRoom} from '../actions/serverActions'
 import Player from './player'
 import {getTrackInformation} from '../actions/rootActions'
+import SearchContainer from '../containers/SearchContainer'
+import SearchBar from './searchBar';
+import SearchResults from './searchResults'
+import Modal from 'react-modal'
 
+// Modal.setAppElement('#App')
 function mapStateToProps(state){
     return state
 }
@@ -38,6 +41,10 @@ class Home extends React.Component{
         this.changeTrack = true
         this.intervalGetTracks = this.intervalGetTracks.bind(this)
         this.playNextTrack = this.playNextTrack.bind(this)
+        this.toggleSearch = this.toggleSearch.bind(this)
+        this.state = {
+          search: false
+        }
     }
     componentWillMount(){
       this.getRoomDetails()
@@ -95,6 +102,7 @@ class Home extends React.Component{
                           roomNumber: room.number,
                           admin: room.admin,
                           playlistId: room.playlists[0].id,
+                          nowPlaying: room.playlists[0].nowPlaying,
                           currentTrack: room.currentTrack,
                           trackName: trackData.trackName,
                           artistName: trackData.artistName,
@@ -180,17 +188,22 @@ class Home extends React.Component{
   }
 
   playNextTrack(){
-    const {queue} = this.props
-    if (queue !== undefined & queue.length > 0){
-      const track = queue[0]
-      let tracks = []
+    const {queue, nowPlaying} = this.props
+    let nextIndex = nowPlaying + 1
+    if (queue !== undefined){
+      if (nextIndex >= queue.length - 1){
+        nextIndex = 0
+      }
       Promise.resolve(popTrack(this.props.playlistId))
           .then((data) => {
+            let tracks = []
             tracks = data.data.popTrack.tracks
-            console.log(tracks)
+            const nextTrack = data.data.popTrack.nowPlaying
             Promise.resolve(this.props.updateTracks({
-              queue: tracks
+              queue: tracks,
+              nowPlaying: nextTrack
             })).then(() => {
+              const track = tracks[nextTrack]
               this.playTrack(track.uri)
               clearInterval(this.updateStateTimeout)
               this.updateStateTimeout = setInterval(this.intervalGetTracks, 10000)
@@ -303,10 +316,10 @@ class Home extends React.Component{
     // return state stuff
   }
   
-   transferPlaybackHere() {
+   async transferPlaybackHere() {
      console.log("Transferring playback")
     const { deviceId, token } = this.props;
-    fetch("https://api.spotify.com/v1/me/player", {
+    await fetch("https://api.spotify.com/v1/me/player", {
       method: "PUT",
       headers: {
         authorization: `Bearer ${token}`,
@@ -317,6 +330,8 @@ class Home extends React.Component{
         "play": false,
       }),
     });
+    await this.playTrack(this.props.queue[this.props.nowPlaying].uri)
+    this.onPlayClick()
   }
 
   searchURI = async searchQuery =>{
@@ -408,9 +423,25 @@ class Home extends React.Component{
         playlistURI: playlistURI
     })
   }
+  toggleSearch(){
+    this.setState({
+      search: !this.state.search
+    })
+  }
 
 
     render(){
+      const customStyles = {
+        content : {
+          top                   : '50%',
+          left                  : '50%',
+          right                 : 'auto',
+          bottom                : 'auto',
+          marginRight           : '-50%',
+          transform             : 'translate(-50%, -50%)',
+          backgroundColor: '#272C34'
+        }
+      };
         return (
             <div className="home-page">
                 <div className="row main">
@@ -418,15 +449,21 @@ class Home extends React.Component{
                       <h3> Room {this.props.roomNumber}</h3>
                   </div>
                   <div className="row search-queue">
-                    <div className="search col-6 col-lg-6">
-                      <div className="row">
-                        <SearchBar token={this.props.token}/>
+                    <div className="search">
+                      <div>
+                        <button className="btn btn-primary" onClick={this.toggleSearch}>Add Tracks</button>
                       </div>
-                      <div className="row">
-                        <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue} queue={this.props.queue}/>
-                      </div>
+                        <Modal isOpen={this.state.search} onRequestClose={this.toggleSearch} ariaHideApp={false}
+                              style={customStyles}>
+                                <div className="row">
+                                    <SearchBar token={this.props.token}/>
+                                </div>
+                                <div className="row">
+                                    <SearchResults results={this.props.searchResults} addToQueue={this.addToQueue} queue={this.props.queue}/>
+                                </div>
+                        </Modal>
                     </div>
-                    <div className="queue col-6 col-lg-6">
+                    <div className="queue">
                       <Queue playTrack={this.playTrack} queue={this.props.queue} owner={this.props.owner}/>
                     </div>
                   </div>

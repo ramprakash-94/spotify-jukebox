@@ -34,7 +34,6 @@ class App extends React.Component {
     }
   }
   componentDidMount(){
-    console.log(this.state.menuOpen)
   }
 
   handleStateChange (state) {
@@ -56,19 +55,18 @@ class App extends React.Component {
     
     return (
       <div id="App">
-        {/* <SideBar 
-          isOpen={this.state.menuOpen}
-          pageWrapId={"page-wrap"} 
-          outerContainerId={"App"} />  */}
-        <div className="App container">
-          <Router>
-            <div id="page-wrap">
-              <NavBar/>
-              <Routes/>
-            </div>
-          </Router>
-        </div>
-
+        <Router>
+          {/* <SideBar 
+            isOpen={this.state.menuOpen}
+            pageWrapId={"page-wrap"} 
+            outerContainerId={"App"} />  */}
+          <div className="App container">
+              <div id="page-wrap">
+                <NavBar/>
+                <Routes/>
+              </div>
+          </div>
+        </Router>
       </div>
     )
   }

@@ -26,7 +26,8 @@ const initialState = {
       rooms: [],
       createRoomError: false,
       fullscreen: false,
-      joinAsGuest: null
+      joinAsGuest: null,
+      nowPlaying: 0
     };
 
 function rootReducer (state = initialState, action){

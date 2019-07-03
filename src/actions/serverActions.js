@@ -80,6 +80,7 @@ export async function handleJoinRoom (roomNumber){
           currentTrack
           playlists{
             id
+            nowPlaying
           }
         }
       }

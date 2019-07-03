@@ -44,28 +44,34 @@ class Player extends React.Component{
         // this.player.nextTrack();
         this.playNextTrack()
     }
-
-    playNextTrack(){
-        const {queue} = this.props
-        if (queue !== undefined & queue.length > 0){
-        const track = queue[0]
-        let tracks = []
-        Promise.resolve(popTrack(this.props.playlistId))
-            .then((data) => {
-                tracks = data.data.popTrack.tracks
-                console.log(tracks)
-                Promise.resolve(this.props.updateTracks({
-                    queue: tracks
-                })).then(() =>
-                this.playTrack(track.uri)
-                )
-            })
-        // this.setState({
-        //   queue: tracks
-        // })
-        }
+  playNextTrack(){
+    const {queue, nowPlaying} = this.props
+    let nextIndex = nowPlaying + 1
+    if (queue !== undefined){
+      if (nextIndex < queue.length){
+        nextIndex = 0
+      }
+      Promise.resolve(popTrack(this.props.playlistId))
+          .then((data) => {
+            let tracks = []
+            tracks = data.data.popTrack.tracks
+            const nextTrack = data.data.popTrack.nowPlaying
+            Promise.resolve(this.props.updateTracks({
+              queue: tracks,
+              nowPlaying: nextTrack
+            })).then(() => {
+              const track = queue[nextTrack]
+              this.playTrack(track.uri)
+              clearInterval(this.updateStateTimeout)
+              this.updateStateTimeout = setInterval(this.intervalGetTracks, 10000)
+            }
+            )
+        })
+      // this.setState({
+      //   queue: tracks
+      // })
     }
-
+  }
     playTrack(uri){
         const { deviceId, token } = this.props;
         fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
