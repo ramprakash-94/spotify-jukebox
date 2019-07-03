@@ -104,12 +104,12 @@ class Player extends React.Component{
                             <div className="col-xs-2 col-lg-2 album-art-player">
                             </div>
                             }
-                            <div className="col-xs-4 col-lg-4">
+                            <div className="col-xs-4 col-lg-auto">
                                 <div className="row track-name">
-                                    {this.props.trackName}
+                                    <p>{this.props.trackName}</p>
                                 </div>
                                 <div className="row artist-name">
-                                    {this.props.artistName}
+                                    <p>{this.props.artistName}</p>
                                 </div>
                                 {/* <div className="row album-name">
                                     {this.props.albumName}
@@ -117,21 +117,21 @@ class Player extends React.Component{
                             </div>
                         {
                             this.props.owner ?
-                            <div className="col-xs-6 col-lg-6 player-control">
-                                <div className="row">
-                                    <span className="player-element">
-                                    <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
-                                    </span>
-                                    <span className="player-element">
-                                    {this.props.playing ?
-                                    <i className="fas fa-pause fa-2x control-button" onClick={() => this.onPlayClick()}></i>
-                                    :
-                                    <i className="fas fa-play fa-2x control-button" onClick={() => this.onPlayClick()}></i>
-                                    }
-                                    </span>
-                                    <span className="player-element">
-                                    <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
-                                    </span>
+                            <div>
+                                <div className="player-control row">
+                                    <div className="col-xs-2 col-lg-2 player-element">
+                                        <i className="fas fa-step-backward fa-2x control-button" onClick={() => this.onPrevClick()}></i>                
+                                    </div>
+                                    <div className="col-xs-2 col-lg-2 player-element">
+                                        {this.props.playing ?
+                                        <i className="fas fa-pause fa-2x control-button" onClick={() => this.onPlayClick()}></i>
+                                        :
+                                        <i className="fas fa-play fa-2x control-button" onClick={() => this.onPlayClick()}></i>
+                                        }
+                                    </div>
+                                    <div className="col-xs-2 col-lg-2 player-element">
+                                        <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
+                                    </div>
                                     <span>
                                     </span>
                                 </div>

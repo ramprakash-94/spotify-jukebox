@@ -95,7 +95,7 @@ code {
 }
 
 .player-element{
-  padding: 10px;
+  margin: 10px;
 }
 
 .control-button:hover{
@@ -261,8 +261,8 @@ code {
   margin-bottom: 30px;
 }
 .player-control{
-  padding-left: 200px;
-  padding-top: 20px;
+  margin-left: 200px;
+  padding-top: 10px;
 }
 
 /* Full Screen Stuff */
@@ -319,4 +319,7 @@ code {
 .open-fullscreen{
   margin-top: 0px;
   padding-bottom: 10px;
+}
+.btn-group{
+  margin-right: 40px;
 }

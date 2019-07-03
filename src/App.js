@@ -56,10 +56,10 @@ class App extends React.Component {
     
     return (
       <div id="App">
-        <SideBar 
+        {/* <SideBar 
           isOpen={this.state.menuOpen}
           pageWrapId={"page-wrap"} 
-          outerContainerId={"App"} /> 
+          outerContainerId={"App"} />  */}
         <div className="App container">
           <Router>
             <div id="page-wrap">
