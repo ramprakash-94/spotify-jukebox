@@ -30,7 +30,8 @@ function mapDispatchToProps(dispatch) {
                 playlistId: null,
                 currentTrack: null,
                 owner: null,
-                type: "LEAVE_ROOM"
+                type: "LEAVE_ROOM",
+                joinAsGuest: null
             })
             push('/room')
         }

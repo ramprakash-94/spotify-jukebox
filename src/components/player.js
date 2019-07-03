@@ -54,7 +54,9 @@ class Player extends React.Component{
             .then((data) => {
                 tracks = data.data.popTrack.tracks
                 console.log(tracks)
-                Promise.resolve(this.props.updateTracks(tracks)).then(() =>
+                Promise.resolve(this.props.updateTracks({
+                    queue: tracks
+                })).then(() =>
                 this.playTrack(track.uri)
                 )
             })
@@ -90,9 +92,16 @@ class Player extends React.Component{
                 {
                   this.props.player ?
                   <div className="row jukebox-player">
-                    <div className="row open-fullscreen" onClick={this.fullScreenPlayer}>
-                        <FontAwesomeIcon icon={faAngleUp} size="2x"/>
-                    </div>
+                    {
+                        this.props.owner ?
+                        <div className="row open-fullscreen" onClick={this.fullScreenPlayer}>
+                            <FontAwesomeIcon icon={faAngleUp} size="2x"/>
+                        </div>
+                        :
+                        <div>
+                        </div>
+
+                    }
                     <div className="row main-player">
                         <div className="current-track-details row">
                             {
@@ -132,13 +141,19 @@ class Player extends React.Component{
                                     <div className="col-xs-2 col-lg-2 player-element">
                                         <i className="fas fa-step-forward fa-2x control-button" onClick={() => this.onNextClick()}></i>
                                     </div>
-                                    <span>
-                                    </span>
                                 </div>
                                 <TrackProgress/>
                             </div>
                             :
                             <div>
+                                <div className="player-control row">
+                                    <div className="col-xs-2 col-lg-2 player-element">
+                                    </div>
+                                    <div className="col-xs-2 col-lg-2 player-element">
+                                    </div>
+                                    <div className="col-xs-2 col-lg-2 player-element">
+                                    </div>
+                                </div>
                             </div>
                         }
                         </div>

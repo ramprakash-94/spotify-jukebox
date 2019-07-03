@@ -115,7 +115,11 @@ class RoomContainer extends React.Component{
 
     goToRoom(){
         const num = this.roomNumber.value
-        this.props.history.push(`/room/${num}`)
+        Promise.resolve(this.props.updateRoomInfo({
+            joinAsGuest: num
+        })).then(() =>
+            this.props.history.push(`/room/${num}`)
+        )
     }
 
     render(){

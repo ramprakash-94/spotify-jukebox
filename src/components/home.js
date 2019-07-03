@@ -36,6 +36,7 @@ class Home extends React.Component{
         this.updateTracks = this.updateTracks.bind(this)
         this.playTrack = this.playTrack.bind(this)
         this.changeTrack = true
+        this.intervalGetTracks = this.intervalGetTracks.bind(this)
     }
     componentWillMount(){
       this.getRoomDetails()
@@ -82,7 +83,7 @@ class Home extends React.Component{
                 console.log(data)
                 const room = data.data.room
                 let owner = false
-                if(this.props.userId === room.admin){
+                if(roomNumber !== this.props.joinAsGuest & this.props.userId === room.admin){
                   owner = true
                 }
                 if (!owner){
@@ -138,18 +139,22 @@ class Home extends React.Component{
         })
     }
 
-    handleEntryPoint = async() => {
-        console.log(this.props)
-        let currentTrack = null
-        let tracks = null
-        this.updateStateTimeout = setInterval(() => {
-            getAllTracks(this.props.playlistId).then(function(data){
-              tracks = data.data.allTracksInPlaylist.tracks
-            })
+    intervalGetTracks(){
+          // getAllTracks(this.props.playlistId).then(function(data){
+          //   let tracks = data.data.allTracksInPlaylist.tracks
+          // })
+          Promise.resolve(getAllTracks(this.props.playlistId)).then((data) => {
+            let tracks = data.data.allTracksInPlaylist.tracks
             if (tracks !== null){
               this.updateTracks(tracks)
             }
-          }, 10000)
+          })
+
+    }
+
+    handleEntryPoint = async() => {
+        console.log(this.props)
+        this.updateStateTimeout = setInterval(this.intervalGetTracks, 10000)
 
         const {position, duration, playing} = this.props
         let newPos = null
@@ -159,9 +164,6 @@ class Home extends React.Component{
           })
         }
 
-        // this.setState({
-        //   queue: tracks
-        // })
     }
   onPrevClick() {
     this.props.player.previousTrack();
@@ -185,8 +187,13 @@ class Home extends React.Component{
           .then(function(data){
             tracks = data.data.popTrack.tracks
             console.log(tracks)
-            Promise.resolve(this.props.updateTracks(tracks)).then(() =>
+            Promise.resolve(this.props.updateTracks({
+              queue: tracks
+            })).then(() => {
               this.playTrack(track.uri)
+              clearInterval(this.updateStateTimeout)
+              this.updateStateTimeout = setInterval(this.intervalGetTracks, 10000)
+            }
             )
         })
       // this.setState({

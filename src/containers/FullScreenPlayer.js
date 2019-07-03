@@ -67,21 +67,15 @@ class FullScreenPlayer extends React.Component{
                                 {this.props.albumName}
                             </div>
                         </div>
-                    {
-                        this.props.owner ?
                         <div className="row fullscreen-player-control">
                             <span className="player-element">
                             {this.props.playing ?
-                            <i className="fas fa-pause fa-2x control-button"></i>
-                            :
                             <i className="fas fa-play fa-2x control-button"></i>
+                            :
+                            <i className="fas fa-pause fa-2x control-button"></i>
                             }
                             </span>
                         </div>
-                        :
-                        <div>
-                        </div>
-                    }
                   </div>
             </div>
 
