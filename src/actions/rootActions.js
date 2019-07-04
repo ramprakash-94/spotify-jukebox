@@ -271,3 +271,57 @@ const client = new ApolloClient({
       albumArt: albumArt
     }
   }
+
+  export async function getTopTracks(token){
+    fetch(`https://api.spotify.com/v1/me/top/tracks`, {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => response.json())
+    .then(function(data){
+      console.log(data)
+    })
+    .catch(function (error){
+      console.log(error);
+    });
+  }
+
+  export async function getAllSpotifyPlaylists(token){
+    let items = null 
+    await fetch(`https://api.spotify.com/v1/me/playlists`, {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => response.json())
+    .then(function(data){
+      console.log(data)
+      items = data.items
+    })
+    .catch(function (error){
+      console.log(error);
+    });
+    return items
+  }
+
+  export async function getSpotifyPlaylistTracks(playlistId, token){
+    let items = null 
+    await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => response.json())
+    .then(function(data){
+      console.log(data)
+      items = data.items
+    })
+    .catch(function (error){
+      console.log(error);
+    });
+    return items
+  }

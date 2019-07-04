@@ -360,3 +360,37 @@ code {
 .queue-title{
   margin-left: 50px;
 }
+
+.playlist-item{
+  padding: 20px;
+  margin: 5px;
+  font-size: 12px;
+  width: 150px;
+  height: 150px;
+  background-color: #171a1f;
+  color: white;
+  word-wrap: break-word;
+  border: none;
+}
+.playlist-item:hover{
+  background-color: #FF5A5F;
+  color: white
+}
+.playlist-grid-title{
+  padding-top: 10px;
+  margin-bottom: 0px;
+}
+.track-info{
+  background-color: #171a1f;
+  color: white;
+  margin: 5px;
+  padding: 5px;
+}
+.track-content{
+  -webkit-flex: 1 1 auto;
+    overflow-y: auto;
+    height: 500px;
+}
+.queue-manager{
+  min-height: 0;
+}

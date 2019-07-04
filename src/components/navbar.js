@@ -7,7 +7,8 @@ function mapStateToProps(state){
       loggedIn: state.loggedIn,
       player: state.player,
       roomNumber: state.roomNumber,
-      owner: state.owner
+      owner: state.owner,
+      manageTracks: state.manageTracks
   }
 }
 
@@ -63,6 +64,10 @@ class NavBar extends React.Component{
         this.props.history.push('/tv')
     }
 
+    leaveToRoom = () => {
+        this.props.history.push(`/room/${this.props.roomNumber}`)
+    }
+
     render(){
         return (
                 <div className="container">
@@ -72,6 +77,12 @@ class NavBar extends React.Component{
                         <span><h1>Spotify Jukebox</h1></span>
                         <div className='btn-toolbar pull-right'>
                         <div className='btn-group'>
+                            {
+                                this.props.manageTracks ?
+                                <button className='btn logout-button btn-outline pull-right' onClick={this.leaveToRoom}>Back to Room</button>
+                                :
+                                <div></div>
+                            }
                             <button className='btn logout-button btn-outline pull-right' onClick={this.logout}>Logout</button>
                             {
                                 this.props.roomNumber ?

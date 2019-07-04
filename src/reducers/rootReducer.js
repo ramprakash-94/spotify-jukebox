@@ -27,7 +27,10 @@ const initialState = {
       createRoomError: false,
       fullscreen: false,
       joinAsGuest: null,
-      nowPlaying: 0
+      nowPlaying: 0,
+      spotifyPlaylists: [],
+      playlistTracks: [],
+      manageTracks: false
     };
 
 function rootReducer (state = initialState, action){

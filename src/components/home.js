@@ -108,6 +108,7 @@ class Home extends React.Component{
                           artistName: trackData.artistName,
                           albumName: trackData.albumName,
                           albumArt: trackData.albumArt,
+                          manageTracks: false,
                           owner: owner,
                           player: true
                       })
@@ -135,7 +136,10 @@ class Home extends React.Component{
                         player: true
                     })
                   ).then(() => {
-                    this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000);
+                    console.log(this.props.player)
+                    if(this.props.player !== null){
+                      this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000);
+                    }
                     Promise.resolve(getAllTracks(this.props.playlistId))
                       .then((data) => {
                         let tracks = data.data.allTracksInPlaylist.tracks
@@ -330,8 +334,9 @@ class Home extends React.Component{
         "play": false,
       }),
     });
-    await this.playTrack(this.props.queue[this.props.nowPlaying].uri)
-    this.onPlayClick()
+    if(this.props.nowPlaying !== 0){
+      await this.playTrack(this.props.queue[this.props.nowPlaying - 1].uri)
+    }
   }
 
   searchURI = async searchQuery =>{
