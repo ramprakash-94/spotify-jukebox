@@ -1,5 +1,8 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Spotify Web Jukebox
 
+Live at https://web-jukebox.herokuapp.com
+
+# Run
 ## Available Scripts
 
 In the project directory, you can run:
