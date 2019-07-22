@@ -325,3 +325,50 @@ const client = new ApolloClient({
     });
     return items
   }
+
+  export async function getSavedTracks(token, nextPaging){
+    let url = null
+    let response = null
+    if (nextPaging === null){
+      url = "https://api.spotify.com/v1/me/tracks"
+    }
+    else{
+      url = nextPaging
+    }
+    await fetch(url, {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => response.json())
+    .then(function(data){
+      response = {
+        items: data.items,
+        next: data.next
+      }
+      console.log(response)
+
+    })
+    .catch(function (error){
+      console.log(error);
+    });
+    return response
+  }
+
+  export async function getSpotifyDevices(token){
+    await fetch(`https://api.spotify.com/v1/me/player/devices`, {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then(response => response.json())
+    .then(function(data){
+      console.log(data)
+    })
+    .catch(function (error){
+      console.log(error);
+    });
+
+  }

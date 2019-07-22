@@ -1,7 +1,7 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import Queue from './queue'
-import {popTrack, getAllTracks} from '../actions/rootActions'
+import {popTrack, getAllTracks, getSpotifyDevices} from '../actions/rootActions'
 import {addToPlaylist, updateRoom, handleJoinRoom} from '../actions/serverActions'
 import Player from './player'
 import {getTrackInformation} from '../actions/rootActions'
@@ -110,7 +110,6 @@ class Home extends React.Component{
                           albumArt: trackData.albumArt,
                           manageTracks: false,
                           owner: owner,
-                          player: true
                       })
                     ).then(() => {
                       Promise.resolve(getAllTracks(this.props.playlistId))
@@ -133,11 +132,10 @@ class Home extends React.Component{
                         playlistId: room.playlists[0].id,
                         currentTrack: room.currentTrack,
                         owner: owner,
-                        player: true
                     })
                   ).then(() => {
                     console.log(this.props.player)
-                    if(this.props.player !== null){
+                    if(this.props.player === null){
                       this.playerCheckInterval = setInterval(() => this.checkForPlayer(), 1000);
                     }
                     Promise.resolve(getAllTracks(this.props.playlistId))
@@ -150,6 +148,7 @@ class Home extends React.Component{
                   })
                 }
         })
+        getSpotifyDevices(this.props.token)
     }
 
     intervalGetTracks(){
@@ -334,9 +333,9 @@ class Home extends React.Component{
         "play": false,
       }),
     });
-    if(this.props.nowPlaying !== 0){
-      await this.playTrack(this.props.queue[this.props.nowPlaying - 1].uri)
-    }
+    // if(this.props.nowPlaying !== 0){
+    //   await this.playTrack(this.props.queue[this.props.nowPlaying - 1].uri)
+    // }
   }
 
   searchURI = async searchQuery =>{

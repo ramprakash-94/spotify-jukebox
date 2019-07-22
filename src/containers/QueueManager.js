@@ -1,10 +1,11 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {getTopTracks, getAllSpotifyPlaylists, getSpotifyPlaylistTracks} from '../actions/rootActions'
+import {getTopTracks, getAllSpotifyPlaylists, getSpotifyPlaylistTracks, getSavedTracks} from '../actions/rootActions'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import {addToPlaylist} from '../actions/serverActions'
+import InfiniteScroll from 'react-infinite-scroller';
 
 function mapStateToProps(state){
     return state
@@ -27,6 +28,7 @@ class QueueManager extends React.Component{
         this.state = {
             loading: null
         }
+        this.getMoreSavedTracks = this.getMoreSavedTracks.bind(this)
     }
     componentDidMount(){
         Promise.resolve(getAllSpotifyPlaylists(this.props.token))
@@ -58,6 +60,43 @@ class QueueManager extends React.Component{
             })
             this.props.updatePlaylists({
                 playlistTracks: tracks
+            })
+        })
+    }
+    getSavedTracks(){
+        Promise.resolve(getSavedTracks(this.props.token, null)).then(data => {
+            const items = data.items
+            const tracks = items.map(i => {
+                return {
+                    id: i.track.id,
+                    uri: i.track.uri,
+                    title: i.track.name,
+                    albumName: i.track.album.name,
+                    artistName: i.track.artists[0].name
+                }
+            })
+            this.props.updatePlaylists({
+                playlistTracks: tracks,
+                nextPaging: data.next
+            })
+        })
+    }
+    getMoreSavedTracks(){
+        const nextPaging = this.props.nextPaging
+        Promise.resolve(getSavedTracks(this.props.token, nextPaging)).then(data => {
+            const items = data.items
+            const tracks = items.map(i => {
+                return {
+                    id: i.track.id,
+                    uri: i.track.uri,
+                    title: i.track.name,
+                    albumName: i.track.album.name,
+                    artistName: i.track.artists[0].name
+                }
+            })
+            this.props.updatePlaylists({
+                playlistTracks: tracks,
+                nextPaging: data.next
             })
         })
     }
@@ -128,7 +167,12 @@ class QueueManager extends React.Component{
             <div>
                 <div className="row queue-manager">
                     <div className="spotify-playlists col-lg-4 col-xs-4">
-                        <h4>Playlists</h4>
+                        <h3>Playlists</h3>
+                            <div className="playlist-item list-group-item col-xs-6 col-lg-6" onClick={() => this.getSavedTracks()}>
+                                <div className="col-6">
+                                    <h5 className="playlist-grid-title">Saved Tracks</h5>
+                                </div>
+                            </div>
                         <div className="list-group row">
                             {
                                 this.props.spotifyPlaylists.map(i => this.renderPlaylistItem(i))
@@ -136,12 +180,12 @@ class QueueManager extends React.Component{
                         </div>
                     </div>
                     <div className="playlist-tracks col-lg-8 col-xs-8">
-                        <h4>Tracks</h4>
-                        <div className="track-content">
-                            {
-                                this.props.playlistTracks.map((i) => this.renderPlaylistTracks(i))
-                            }
-                        </div>
+                        <h3>Tracks</h3>
+                            <div className="track-content">
+                                {
+                                    this.props.playlistTracks.map((i) => this.renderPlaylistTracks(i))
+                                }
+                            </div>
                     </div>
                 </div>
             </div>

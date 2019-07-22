@@ -95,7 +95,7 @@ class LoginContainer extends React.Component{
     spotifyAuth(event){
         const {client_id, redirect_uri} = this.state
         const encoded_redirect = encodeURIComponent(redirect_uri)
-        let uri = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encoded_redirect}&scope=${encodeURIComponent("playlist-modify-public user-read-email streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-private user-read-birthdate")}`
+        let uri = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encoded_redirect}&scope=${encodeURIComponent("playlist-modify-public user-read-email streaming user-modify-playback-state user-read-playback-state user-read-currently-playing user-read-private user-read-birthdate user-library-read")}`
         event.preventDefault()
         window.location = uri
         this.setState({

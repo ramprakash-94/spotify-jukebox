@@ -32,7 +32,8 @@ function mapDispatchToProps(dispatch) {
                 currentTrack: null,
                 owner: null,
                 type: "LEAVE_ROOM",
-                joinAsGuest: null
+                joinAsGuest: null,
+                player: null
             })
             push('/room')
         }
